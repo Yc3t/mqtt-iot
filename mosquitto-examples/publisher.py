@@ -14,6 +14,7 @@ def on_connect(client,userdata,flags,rc,properties):
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 
 client.on_connect = on_connect
+client.username_pw_set("admin","public")
 
 client.connect("localhost", 1883,60)
 client.loop_start()
@@ -34,8 +35,8 @@ try:
         }
 
 
-        client.publish("test/temperature", json.dumps(temp_data))
-        client.publish("test/humidity", json.dumps(temp_data))
+        client.publish("test/temperature", json.dumps(temp_data),retain=True)
+        client.publish("test/humidity", json.dumps(humid_data),retain=True)
 
         print(f"Published: Temp={temp_data['value']}°C, Humidity={humid_data['value']}%")
         time.sleep(2)
