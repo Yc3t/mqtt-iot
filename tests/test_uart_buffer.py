@@ -101,21 +101,4 @@ def test_close(uart_receiver):
 
 
 
-    
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
 
