@@ -29,6 +29,7 @@ class BLESimulator:
         self.scan_time_ms = scan_time_ms
         self.buffer_size = buffer_size
         self.max_devices = max_devices
+        self.error_simulation = True  # Habilitar simulación de errores
 
     def generate_random_mac(self):
         """Generate a random MAC address."""
@@ -39,21 +40,16 @@ class BLESimulator:
         return [random.randint(0, 255) for _ in range(length)]
 
     def generate_device_data(self):
-        """Generate random device data."""
-        mac = self.generate_random_mac()
-        adv_data = self.generate_random_adv_data()
-
-        device = {
-            "mac": mac,
-            "addr_type": random.randint(0, 1),  # 0: Public, 1: Random
-            "adv_type": random.choice(list(AdvType)).value,  # Random advertisement type
-            "rssi": random.randint(-100, -30),  # Random RSSI value
-            "data_length": 31,  # Fixed length for advertisement data
-            "data": adv_data,  # Random advertisement data
-            "n_adv": random.randint(1, 10),  # Number of advertisements
+        """Genera datos fijos de dispositivo para testing"""
+        return {
+            "mac": [0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC],
+            "addr_type": 1,
+            "adv_type": AdvType.CONNECTABLE.value,
+            "rssi": -75,
+            "data_length": 31,
+            "data": [i % 256 for i in range(31)],  # Patrón predecible
+            "n_adv": 5
         }
-
-        return device
 
     def create_buffer(self, num_devices=5):
         """Create a buffer with the specified number of devices."""
@@ -91,7 +87,35 @@ class BLESimulator:
                 device["n_adv"],  # 1 byte: Number of advertisements
             )
 
-        return header + device_data
+        buffer = header + device_data
+        return self.simulate_errors(buffer)
+
+    def simulate_errors(self, buffer):
+        """Simula diferentes tipos de errores en el buffer"""
+        if not self.error_simulation:
+            return buffer
+            
+        # 1. Error de secuencia (5% probabilidad)
+        if random.random() < 0.05:
+            self.sequence_number += random.randint(1, 5)
+            logger.warning(f"Error: Salto de secuencia a {self.sequence_number}")
+            
+        # 2. Corrupción de datos (3% probabilidad)
+        if random.random() < 0.03:
+            buffer_list = bytearray(buffer)
+            pos = random.randint(9, len(buffer)-1)  # No corromper el header
+            buffer_list[pos] = random.randint(0, 255)
+            buffer = bytes(buffer_list)
+            logger.warning(f"Error: Corrupción en posición {pos}")
+            
+        # 3. Header mágico inválido (2% probabilidad)
+        if random.random() < 0.02:
+            buffer_list = bytearray(buffer)
+            buffer_list[0] = 0x54  # Corromper magic header
+            buffer = bytes(buffer_list)
+            logger.warning("Error: Header mágico inválido")
+            
+        return buffer
 
     def print_buffer_info(self, buffer):
         """Print detailed information about the buffer."""
