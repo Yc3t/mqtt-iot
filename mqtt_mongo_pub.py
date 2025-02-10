@@ -20,8 +20,9 @@ class LogLevel(str, Enum):
 class UARTMQTTPublisher(UARTReceiver):
     # UART Protocol Constants
     HEADER_MAGIC = b'\x55\x55\x55\x55'
-    HEADER_LENGTH = 8
-    DEVICE_LENGTH = 32
+    HEADER_LENGTH = 9
+    DEVICE_LENGTH = 42
+    MAX_DEVICES = 1024
 
     def __init__(self, port='/dev/ttyUSB0', baudrate=115200,
                  mqtt_broker="localhost", mqtt_port=1883,
@@ -321,14 +322,15 @@ class UARTMQTTPublisher(UARTReceiver):
             self.logger.error(f"Error closing connections: {e}")
 
     def _parse_header(self, data):
-        """Parse UART header data"""
+        """Parse UART header data with new format"""
         try:
             if len(data) != self.HEADER_LENGTH:
                 return None
             
-            sequence = int.from_bytes(data[4:6], byteorder='little')
-            n_adv_raw = int.from_bytes(data[6:7], byteorder='little')
-            n_mac = int.from_bytes(data[7:8], byteorder='little')
+            # Actualizado para usar uint16_t para n_adv_raw y n_mac
+            sequence = int.from_bytes(data[4:5], byteorder='little')
+            n_adv_raw = int.from_bytes(data[5:7], byteorder='little')  # 2 bytes
+            n_mac = int.from_bytes(data[7:9], byteorder='little')      # 2 bytes
             
             return {
                 'sequence': sequence,

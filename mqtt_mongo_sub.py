@@ -17,7 +17,14 @@ class MQTTMongoSubscriber:
                  mqtt_topic="admin/reader", mqtt_username=None, mqtt_password=None,
                  mongo_uri="mongodb://localhost:27017/",
                  log_level="info"):
-        """Initialize MQTT subscriber with MongoDB connection"""
+        """Initialize MQTT subscriber with MongoDB connection
+        Expects messages with updated format supporting up to 1024 devices
+        Header format:
+        - 4 bytes: Magic (0x55555555)
+        - 1 byte:  Sequence
+        - 2 bytes: n_adv_raw (uint16_t)
+        - 2 bytes: n_mac (uint16_t)
+        """
         self.running = True
         self.mqtt_topic = mqtt_topic
         self.messages_received = 0
@@ -136,11 +143,16 @@ class MQTTMongoSubscriber:
             # Convert ISO format timestamp string back to datetime
             payload['timestamp'] = datetime.fromisoformat(payload['timestamp'])
             
+            # Validación adicional para el nuevo rango de dispositivos
+            n_devices = len(payload.get('devices', []))
+            if n_devices > 1024:
+                self.logger.warning(f"Received more devices than expected: {n_devices}")
+            
             # Log message details
             self.logger.info(
                 f"Message #{self.messages_received} - "
                 f"Sequence: {payload.get('sequence', 'N/A')}, "
-                f"Devices: {len(payload.get('devices', []))}, "
+                f"Devices: {n_devices}/1024, "  # Actualizado para mostrar capacidad
                 f"N_ADV_RAW: {payload.get('n_adv_raw', 'N/A')}"
             )
             
