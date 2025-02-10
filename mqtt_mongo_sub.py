@@ -9,6 +9,8 @@ import signal
 import sys
 import platform
 import time
+import queue
+import threading
 
 class MQTTMongoSubscriber:
     def __init__(self, mqtt_broker="localhost", mqtt_port=1883,
@@ -68,6 +70,11 @@ class MQTTMongoSubscriber:
             self.logger.error(f"Error connecting to MQTT broker: {e}")
             raise
 
+        # Create a thread-safe queue and start a background worker for MongoDB inserts.
+        self.message_queue = queue.Queue()
+        self.mongo_worker = threading.Thread(target=self._process_messages, daemon=True)
+        self.mongo_worker.start()
+
     def _setup_logging(self, log_level):
         """Configure logging system"""
         log_dir = "logs"
@@ -104,7 +111,8 @@ class MQTTMongoSubscriber:
         """Callback for when the client receives a CONNACK response from the server"""
         if reason_code == 0:
             self.logger.info("Connected to MQTT Broker successfully")
-            client.subscribe(self.mqtt_topic)
+            # Subscribe with QoS=1 to ensure reliable delivery.
+            client.subscribe(self.mqtt_topic, qos=1)
             self.logger.info(f"Subscribed to topic: {self.mqtt_topic}")
         else:
             self.logger.error(f"Failed to connect to MQTT Broker with code: {reason_code}")
@@ -136,27 +144,9 @@ class MQTTMongoSubscriber:
                 f"N_ADV_RAW: {payload.get('n_adv_raw', 'N/A')}"
             )
             
-            # Store in MongoDB
-            result = self.collection.insert_one(payload)
+            # Instead of inserting synchronously, enqueue the payload
+            self.message_queue.put(payload)
             
-            # Update devices count and log details
-            n_devices = len(payload.get('devices', []))
-            self.devices_processed += n_devices
-            
-            self.logger.info(
-                f"Stored in MongoDB - ID: {result.inserted_id}, "
-                f"Total messages: {self.messages_received}, "
-                f"Total devices: {self.devices_processed}"
-            )
-            
-            # Log some device details
-            for i, device in enumerate(payload.get('devices', []), 1):
-                self.logger.debug(
-                    f"Device {i}/{n_devices} - "
-                    f"MAC: {device.get('mac', 'N/A')}, "
-                    f"RSSI: {device.get('rssi', 'N/A')}"
-                )
-                
         except json.JSONDecodeError as e:
             self.logger.error(f"Error decoding JSON message: {e}")
             self.logger.error(f"Raw message: {msg.payload}")
@@ -164,13 +154,44 @@ class MQTTMongoSubscriber:
             self.logger.error(f"Error processing message: {e}")
             self.logger.error(f"Raw message: {msg.payload}")
 
+    def _process_messages(self):
+        """Worker thread to process messages from the queue and insert into MongoDB in bulk"""
+        batch = []
+        batch_size = 10  # Adjust batch size as needed.
+        flush_interval = 5  # Flush every 5 seconds.
+        last_flush = time.time()
+
+        while self.running or not self.message_queue.empty():
+            try:
+                payload = self.message_queue.get(timeout=1)
+                batch.append(payload)
+            except queue.Empty:
+                pass
+
+            # If enough items are queued or flush interval passed, perform bulk insert.
+            if (len(batch) >= batch_size) or ((time.time() - last_flush) >= flush_interval and batch):
+                try:
+                    result = self.collection.insert_many(batch)
+                    new_devices = sum(len(item.get('devices', [])) for item in batch)
+                    self.devices_processed += new_devices
+                    self.logger.info(
+                        f"Stored batch to MongoDB - IDs: {result.inserted_ids}, "
+                        f"Total messages: {self.messages_received}, "
+                        f"Total devices: {self.devices_processed}"
+                    )
+                except Exception as e:
+                    self.logger.error(f"Bulk insert error: {e}")
+                finally:
+                    batch = []
+                    last_flush = time.time()
+
     def signal_handler(self, signum, frame):
         """Signal handler for clean shutdown"""
         self.running = False
         self.logger.info("Termination signal received")
 
     def start(self):
-        """Start the MQTT client loop"""
+        """Start the MQTT client loop and log stats periodically"""
         self.logger.info("Starting MQTT subscriber...")
         self.mqtt_client.loop_start()
         
@@ -190,8 +211,9 @@ class MQTTMongoSubscriber:
             self.close()
 
     def close(self):
-        """Close all connections"""
+        """Close all connections and wait for background threads"""
         try:
+            self.running = False
             self.mqtt_client.loop_stop()
             self.mqtt_client.disconnect()
             self.logger.info("MQTT connection closed")
@@ -199,6 +221,10 @@ class MQTTMongoSubscriber:
             self.mongo_client.close()
             self.logger.info("MongoDB connection closed")
             
+            # Wait for the MongoDB worker thread to finish processing any remaining messages.
+            if self.mongo_worker.is_alive():
+                self.mongo_worker.join(timeout=5)
+
             self.logger.info(f"Script finished: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         except Exception as e:
             self.logger.error(f"Error closing connections: {e}")

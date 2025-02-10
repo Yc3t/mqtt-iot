@@ -3,6 +3,8 @@ from pymongo import MongoClient
 import struct
 from datetime import datetime
 import logging
+import threading
+from queue import Queue
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -37,20 +39,23 @@ def setup_mongodb():
 # Parse buffer and store in MongoDB
 def parse_and_store_buffer(buffer, collection):
     try:
-        # Unpack header
+        # Validate header magic
+        if buffer[:4] != UART_HEADER_MAGIC:
+            logger.error("Invalid header magic. Skipping buffer.")
+            return
+
+        # Unpack header: format <4sBBHB (9 bytes total)
         header = struct.unpack("<4sBBHB", buffer[:9])
-        logger.info("\nBuffer Header:")
+        logger.info("Buffer Header:")
         logger.info(f"Magic: {header[0].hex()}")
         logger.info(f"Message Type: {header[1]}")
         logger.info(f"Sequence Number: {header[2]}")
         logger.info(f"Total Events: {header[3]}")
         logger.info(f"Unique MACs: {header[4]}")
 
-        # Unpack device data
         device_data = buffer[9:]
         num_devices = header[4]
 
-        # Prepare document for MongoDB
         document = {
             "timestamp": datetime.now(),
             "sequence": header[2],
@@ -61,7 +66,12 @@ def parse_and_store_buffer(buffer, collection):
 
         for i in range(num_devices):
             start = i * DEVICE_DATA_SIZE
-            device = struct.unpack("<6sBBbB31sB", device_data[start:start + DEVICE_DATA_SIZE])
+            end = start + DEVICE_DATA_SIZE
+            # Validate that we have enough data
+            if end > len(device_data):
+                logger.warning("Buffer truncated. Stopping device parsing.")
+                break
+            device = struct.unpack("<6sBBbB31sB", device_data[start:end])
             device_doc = {
                 "mac": device[0].hex(":"),
                 "addr_type": device[1],
@@ -73,47 +83,58 @@ def parse_and_store_buffer(buffer, collection):
             }
             document["devices"].append(device_doc)
 
-        # Insert document into MongoDB
         result = collection.insert_one(document)
         logger.info(f"Buffer stored in MongoDB with ID: {result.inserted_id}")
-
     except struct.error as e:
         logger.error(f"Error unpacking buffer: {e}")
     except Exception as e:
         logger.error(f"Error storing buffer in MongoDB: {e}")
 
-# MQTT on_message callback
-def on_message(client, userdata, msg):
-    logger.info(f"Received message on topic {msg.topic}")
-    parse_and_store_buffer(msg.payload, collection)
+# --- MQTT and Worker Setup ---
 
-# MQTT Client setup
+# Use a work queue to decouple incoming MQTT messages from processing.
+message_queue = Queue()
+
+def mqtt_on_message(client, userdata, msg):
+    logger.info(f"Received message on topic {msg.topic}")
+    message_queue.put(msg.payload)
+
 def setup_mqtt_client():
     try:
         client = mqtt.Client()
-        client.on_message = on_message
+        client.on_message = mqtt_on_message
         client.connect(MQTT_BROKER, MQTT_PORT)
-        client.subscribe(MQTT_TOPIC)
+        # Subscribe with QoS 1 to ensure reliable delivery.
+        client.subscribe(MQTT_TOPIC, qos=1)
         logger.info("Connected to MQTT broker successfully.")
         return client
     except Exception as e:
         logger.error(f"Failed to connect to MQTT broker: {e}")
         raise
 
-# Main function
-if __name__ == "__main__":
+def message_worker(collection):
+    while True:
+        payload = message_queue.get()
+        if payload is None:
+            break
+        parse_and_store_buffer(payload, collection)
+        message_queue.task_done()
+
+def main():
+    collection = setup_mongodb()
+    mqtt_client = setup_mqtt_client()
+
+    worker_thread = threading.Thread(target=message_worker, args=(collection,), daemon=True)
+    worker_thread.start()
+
+    logger.info("Starting MQTT subscriber loop...")
     try:
-        # Initialize MongoDB collection
-        collection = setup_mongodb()
-
-        # Initialize MQTT client
-        mqtt_client = setup_mqtt_client()
-        logger.info("Starting MQTT subscriber...")
-
-        # Start the MQTT loop
         mqtt_client.loop_forever()
-
     except KeyboardInterrupt:
-        logger.info("\nSubscriber stopped.")
-    except Exception as e:
-        logger.error(f"An error occurred: {e}")
+        logger.info("Subscriber stopped.")
+    finally:
+        message_queue.put(None)
+        worker_thread.join()
+
+if __name__ == "__main__":
+    main()

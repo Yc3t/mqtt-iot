@@ -84,43 +84,94 @@ class BLESimulator:
         }
 
     def create_buffer(self, num_devices=5):
-        """Create a buffer with the specified number of devices."""
-        if not self.buffer_active:
-            return None
+        """Create a binary buffer with the specified number of devices.
+        
+        The buffer is structured as follows:
+          - A header using the format <4sBBHB, where:
+              • 4s: Header magic (can be corrupted if error simulation is enabled)
+              • B:  Message type (fixed as 0x01)
+              • B:  Sequence number (with optional jumps)
+              • H:  Raw advertisement events count
+              • B:  Number of unique devices (n_mac)
+          - Followed by one device record per device with the format <6sBBbB31sB>
+        """
+        # --- Error injection in header ---
+        header_magic = UART_HEADER_MAGIC
+        # Inject header error if enabled
+        if self.error_config.enable_header_errors and \
+           (self.error_config.trigger_header_error or random.random() < self.error_config.header_error_rate):
+            header_magic = b'\x00\x00\x00\x00'
+            logger.warning("Header error injected!")
+            self.error_config.reset_triggers()
+        
+        # --- Update sequence number (with error injection) ---
+        if self.error_config.enable_sequence_errors and \
+           (self.error_config.trigger_sequence_error or random.random() < self.error_config.sequence_error_rate):
+            # Jump a random number ahead
+            seq_jump = random.randint(*self.error_config.sequence_jump_range)
+            self.sequence_number = (self.sequence_number + seq_jump) % 256
+            logger.warning("Sequence jump error injected!")
+            self.error_config.reset_triggers()
+        else:
+            self.sequence_number = (self.sequence_number + 1) % 256
 
-        # Generate header
-        self.sequence_number = (self.sequence_number + 1) % 256
-        self.n_adv_raw += sum(device["n_adv"] for device in self.devices)
+        # --- Update raw advertisement events count ---
+        # For simulation purposes, assume each device contributes 5 events.
+        self.n_adv_raw += num_devices * 5
 
-        # Create devices
-        self.devices = [self.generate_device_data() for _ in range(num_devices)]
+        # --- Generate devices with optional data corruption ---
+        devices_data = []
+        for _ in range(num_devices):
+            dev = self.generate_device_data()
+            if self.error_config.enable_data_corruption and \
+               (self.error_config.trigger_corruption_error or random.random() < self.error_config.data_corruption_rate):
+                # Corrupt the advertisement data: invert a random byte
+                corrupted_data = bytearray(dev["data"])
+                idx = random.randint(0, len(corrupted_data) - 1)
+                corrupted_data[idx] ^= 0xFF  # invert all bits in the chosen byte
+                dev["data"] = list(corrupted_data)
+                logger.warning("Data corruption error injected!")
+                self.error_config.reset_triggers()
+            devices_data.append(dev)
+        self.devices = devices_data
 
-        # Pack header
+        # --- Pack the header ---
         header = struct.pack(
             "<4sBBHB",
-            UART_HEADER_MAGIC,  # 4 bytes: Magic header
-            0x01,  # 1 byte: Message type (advertisement data)
-            self.sequence_number,  # 1 byte: Sequence number
-            self.n_adv_raw,  # 2 bytes: Total reception events
-            len(self.devices),  # 1 byte: Number of unique MACs
+            header_magic,                     # 4 bytes: Magic header (may be corrupted)
+            0x01,                             # 1 byte: Message type (advertisement data)
+            self.sequence_number,             # 1 byte: Sequence number
+            self.n_adv_raw,                   # 2 bytes: Total raw advertisements
+            len(self.devices),                # 1 byte: Number of unique devices (n_mac)
         )
 
-        # Pack device data
-        device_data = b""
-        for device in self.devices:
-            device_data += struct.pack(
+        # --- Pack each device record ---
+        devices_bin = b""
+        for dev in self.devices:
+            mac_bytes = bytes(dev["mac"])
+            data_bytes = bytes(dev["data"])
+            # Pack using the format <6sBBbB31sB> 
+            device_bin = struct.pack(
                 "<6sBBbB31sB",
-                bytes(device["mac"]),  # 6 bytes: MAC address
-                device["addr_type"],  # 1 byte: Address type
-                device["adv_type"],  # 1 byte: Advertisement type
-                device["rssi"],  # 1 byte: RSSI
-                device["data_length"],  # 1 byte: Data length
-                bytes(device["data"]),  # 31 bytes: Advertisement data
-                device["n_adv"],  # 1 byte: Number of advertisements
+                mac_bytes,                # 6 bytes: MAC address
+                dev["addr_type"],         # 1 byte: Address type
+                dev["adv_type"],          # 1 byte: Advertisement type
+                dev["rssi"],              # 1 byte (signed): RSSI
+                dev["data_length"],       # 1 byte: Data length
+                data_bytes,               # 31 bytes: Advertisement data
+                dev["n_adv"]              # 1 byte: Number of advertisements for this device
             )
+            devices_bin += device_bin
 
-        buffer = header + device_data
-        return self.simulate_errors(buffer)
+        full_buffer = header + devices_bin
+
+        # --- Optionally pad or truncate to the fixed buffer size ---
+        if len(full_buffer) < self.buffer_size:
+            full_buffer += b"\x00" * (self.buffer_size - len(full_buffer))
+        else:
+            full_buffer = full_buffer[:self.buffer_size]
+
+        return full_buffer
 
     def simulate_errors(self, buffer):
         """Simulate different types of errors in the buffer based on configuration"""

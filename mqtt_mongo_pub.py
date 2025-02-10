@@ -10,6 +10,8 @@ import os
 from enum import Enum
 import signal
 import sys
+import queue
+import threading
 
 class LogLevel(str, Enum):
     INFO = "info"
@@ -26,7 +28,7 @@ class UARTMQTTPublisher(UARTReceiver):
                  mqtt_topic="admin/reader", mqtt_username=None, mqtt_password=None,
                  log_level="info"):
         """Initialize UART receiver with MQTT publisher"""
-        # Store port and baudrate as instance variables
+        # Store port, baudrate and MQTT topic as instance variables
         self.port = port
         self.baudrate = baudrate
         self.running = True
@@ -69,6 +71,11 @@ class UARTMQTTPublisher(UARTReceiver):
         except Exception as e:
             self.logger.error(f"Error connecting to MQTT broker: {e}")
             raise
+
+        # Create a queue to decouple UART read and MQTT publish
+        self.publish_queue = queue.Queue()
+        self.publish_worker = threading.Thread(target=self._process_publish_queue, daemon=True)
+        self.publish_worker.start()
 
     def _setup_logging(self):
         """Configure logging system"""
@@ -172,6 +179,17 @@ class UARTMQTTPublisher(UARTReceiver):
             self.logger.error(f"Error publishing to MQTT: {e}")
             return False
 
+    def _process_publish_queue(self):
+        """Worker thread to process publish queue and send buffers to MQTT"""
+        while self.running or not self.publish_queue.empty():
+            try:
+                header, devices = self.publish_queue.get(timeout=1)
+                self._publish_buffer(header, devices)
+            except queue.Empty:
+                continue
+            except Exception as e:
+                self.logger.error(f"Error in publish worker: {e}")
+
     def _reset_serial(self):
         """Reset and reopen serial port"""
         try:
@@ -198,7 +216,7 @@ class UARTMQTTPublisher(UARTReceiver):
         self.logger.info("Termination signal received")
         
     def receive_messages(self, duration=None):
-        """Receive and publish buffers for a specific duration"""
+        """Receive UART buffers and enqueue them for MQTT publishing"""
         start_time = time.time()
         processed_buffers = 0
         error_count = 0
@@ -246,14 +264,15 @@ class UARTMQTTPublisher(UARTReceiver):
                             self.logger.debug(f"Device {i+1} parsed - MAC: {device['mac']}")
 
                     if devices:
-                        if self._publish_buffer(header, devices):
-                            processed_buffers += 1
-                            self.logger.debug(
-                                f"Buffer #{processed_buffers} processed - "
-                                f"Sequence: {header['sequence']}, "
-                                f"Devices: {len(devices)}, "
-                                f"N_ADV_RAW: {header['n_adv_raw']}"
-                            )
+                        # Enqueue the parsed buffer. The background thread will publish.
+                        self.publish_queue.put((header, devices))
+                        processed_buffers += 1
+                        self.logger.debug(
+                            f"Buffer #{processed_buffers} processed - "
+                            f"Sequence: {header['sequence']}, "
+                            f"Devices: {len(devices)}, "
+                            f"N_ADV_RAW: {header['n_adv_raw']}"
+                        )
 
             except serial.SerialException as e:
                 error_count += 1
@@ -281,7 +300,7 @@ class UARTMQTTPublisher(UARTReceiver):
         self.logger.info(f"Script finished: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
     def close(self):
-        """Close all connections"""
+        """Close all connections and wait for background threads"""
         try:
             super().close()  # Close serial port using parent method
             self.logger.info("Serial port closed")
@@ -293,6 +312,10 @@ class UARTMQTTPublisher(UARTReceiver):
             except Exception as mqtt_e:
                 self.logger.error(f"Error disconnecting MQTT: {mqtt_e}")
                 
+            # Wait for the publish worker thread to finish.
+            if self.publish_worker.is_alive():
+                self.publish_worker.join(timeout=5)
+
             self.logger.info(f"Script finished: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         except Exception as e:
             self.logger.error(f"Error closing connections: {e}")
