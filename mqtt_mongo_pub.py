@@ -10,8 +10,6 @@ import os
 from enum import Enum
 import signal
 import sys
-import queue
-import threading
 
 class LogLevel(str, Enum):
     INFO = "info"
@@ -22,7 +20,7 @@ class UARTMQTTPublisher(UARTReceiver):
     HEADER_MAGIC = b'\x55\x55\x55\x55'
     HEADER_LENGTH = 9
     DEVICE_LENGTH = 42
-    MAX_DEVICES = 1024
+    MAX_DEVICES = 50  # Updated buffer size: 50 devices
 
     def __init__(self, port='/dev/ttyUSB0', baudrate=115200,
                  mqtt_broker="localhost", mqtt_port=1883,
@@ -72,11 +70,6 @@ class UARTMQTTPublisher(UARTReceiver):
         except Exception as e:
             self.logger.error(f"Error connecting to MQTT broker: {e}")
             raise
-
-        # Create a queue to decouple UART read and MQTT publish
-        self.publish_queue = queue.Queue()
-        self.publish_worker = threading.Thread(target=self._process_publish_queue, daemon=True)
-        self.publish_worker.start()
 
     def _setup_logging(self):
         """Configure logging system"""
@@ -145,7 +138,7 @@ class UARTMQTTPublisher(UARTReceiver):
             self.logger.warning(f"Message {mid} failed to publish with reason code: {reason_code}")
 
     def _publish_buffer(self, header, devices):
-        """Publish the buffer to MQTT topic"""
+        """Publish the buffer immediately to MQTT topic"""
         try:
             document = {
                 'timestamp': datetime.now().isoformat(),
@@ -167,29 +160,18 @@ class UARTMQTTPublisher(UARTReceiver):
                 }
                 document['devices'].append(device_doc)
             
-            # Publish to MQTT
+            # Publish to MQTT immediately
             message = json.dumps(document)
             result = self.mqtt_client.publish(self.mqtt_topic, message, qos=1)
             if result.rc == mqtt.MQTT_ERR_SUCCESS:
-                self.logger.debug(f"Buffer queued for publishing - Sequence: {header['sequence']}, MACs: {len(devices)}")
+                self.logger.debug(f"Buffer published - Sequence: {header['sequence']}, Devices: {len(devices)}")
                 return True
             else:
-                self.logger.error(f"Error queuing message for publish: {result.rc}")
+                self.logger.error(f"Error publishing message: {result.rc}")
                 return False
         except Exception as e:
             self.logger.error(f"Error publishing to MQTT: {e}")
             return False
-
-    def _process_publish_queue(self):
-        """Worker thread to process publish queue and send buffers to MQTT"""
-        while self.running or not self.publish_queue.empty():
-            try:
-                header, devices = self.publish_queue.get(timeout=1)
-                self._publish_buffer(header, devices)
-            except queue.Empty:
-                continue
-            except Exception as e:
-                self.logger.error(f"Error in publish worker: {e}")
 
     def _reset_serial(self):
         """Reset and reopen serial port with a 20-second timeout"""
@@ -198,7 +180,7 @@ class UARTMQTTPublisher(UARTReceiver):
                 self.serial.close()
             
             self.logger.info(f"Attempting to reopen serial port {self.port}")
-            # Increase timeout to 20.0 seconds to accommodate the 7-second buffer interval.
+            # Increase timeout to 20.0 seconds to accommodate the 5-second buffer interval.
             self.serial = serial.Serial(
                 port=self.port,
                 baudrate=self.baudrate,
@@ -218,7 +200,7 @@ class UARTMQTTPublisher(UARTReceiver):
         self.logger.info("Termination signal received")
         
     def receive_messages(self, duration=None):
-        """Receive UART buffers and enqueue them for MQTT publishing"""
+        """Receive UART buffers and publish them immediately to MQTT"""
         start_time = time.time()
         processed_buffers = 0
         error_count = 0
@@ -266,8 +248,8 @@ class UARTMQTTPublisher(UARTReceiver):
                             self.logger.debug(f"Device {i+1} parsed - MAC: {device['mac']}")
 
                     if devices:
-                        # Enqueue the parsed buffer. The background thread will publish.
-                        self.publish_queue.put((header, devices))
+                        # Publish the received buffer immediately instead of queuing it.
+                        self._publish_buffer(header, devices)
                         processed_buffers += 1
                         self.logger.debug(
                             f"Buffer #{processed_buffers} processed - "
@@ -306,7 +288,7 @@ class UARTMQTTPublisher(UARTReceiver):
         self.logger.info(f"Script finished: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
     def close(self):
-        """Close all connections and wait for background threads"""
+        """Close all connections"""
         try:
             super().close()  # Close serial port using parent method
             self.logger.info("Serial port closed")
@@ -317,10 +299,6 @@ class UARTMQTTPublisher(UARTReceiver):
                 self.logger.info("MQTT connection closed")
             except Exception as mqtt_e:
                 self.logger.error(f"Error disconnecting MQTT: {mqtt_e}")
-                
-            # Wait for the publish worker thread to finish.
-            if self.publish_worker.is_alive():
-                self.publish_worker.join(timeout=5)
 
             self.logger.info(f"Script finished: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         except Exception as e:
@@ -332,7 +310,7 @@ class UARTMQTTPublisher(UARTReceiver):
             if len(data) != self.HEADER_LENGTH:
                 return None
             
-            # Actualizado para usar uint16_t para n_adv_raw y n_mac
+            # Parse using uint16_t for n_adv_raw and n_mac
             sequence = int.from_bytes(data[4:5], byteorder='little')
             n_adv_raw = int.from_bytes(data[5:7], byteorder='little')  # 2 bytes
             n_mac = int.from_bytes(data[7:9], byteorder='little')      # 2 bytes
@@ -376,26 +354,26 @@ class UARTMQTTPublisher(UARTReceiver):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='BLE Scanner UART MQTT Publisher')
     parser.add_argument('--port', type=str, default='/dev/ttyUSB0',
-                      help='Serial port (default: /dev/ttyUSB0)')
+                        help='Serial port (default: /dev/ttyUSB0)')
     parser.add_argument('--duration', type=int,
-                      help='Capture duration in seconds')
+                        help='Capture duration in seconds')
     parser.add_argument('--mqtt-broker', type=str,
-                      default="localhost",
-                      help='MQTT broker address (default: localhost)')
+                        default="localhost",
+                        help='MQTT broker address (default: localhost)')
     parser.add_argument('--mqtt-port', type=int,
-                      default=1883,
-                      help='MQTT broker port (default: 1883)')
+                        default=1883,
+                        help='MQTT broker port (default: 1883)')
     parser.add_argument('--mqtt-topic', type=str,
-                      default="admin/reader",
-                      help='MQTT topic (default: admin/reader)')
+                        default="admin/reader",
+                        help='MQTT topic (default: admin/reader)')
     parser.add_argument('--mqtt-username', type=str,
-                      help='MQTT username (optional)')
+                        help='MQTT username (optional)')
     parser.add_argument('--mqtt-password', type=str,
-                      help='MQTT password (optional)')
+                        help='MQTT password (optional)')
     parser.add_argument('--log-level', type=str,
-                      choices=['info', 'debug'],
-                      default='info',
-                      help='Logging level (default: info)')
+                        choices=['info', 'debug'],
+                        default='info',
+                        help='Logging level (default: info)')
     
     args = parser.parse_args()
     
@@ -410,7 +388,7 @@ if __name__ == "__main__":
             log_level=args.log_level
         )
         publisher.logger.info("Starting capture %s", 
-                          "indefinitely" if not args.duration else f"for {args.duration} seconds")
+                              "indefinitely" if not args.duration else f"for {args.duration} seconds")
         publisher.receive_messages(duration=args.duration)
     except Exception as e:
         if hasattr(publisher, 'logger'):

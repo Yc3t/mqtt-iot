@@ -9,26 +9,26 @@ LOG_MODULE_REGISTER(ble_scanner, LOG_LEVEL_INF);
 #define UART_HEADER_MAGIC      0x55    /* Patrón de sincronización: 01010101 */
 #define UART_HEADER_LENGTH     4       /* Longitud de la cabecera */
 #define MSG_TYPE_ADV_DATA      0x01    /* Tipo mensaje: datos advertisement */
-#define MAX_DEVICES 1024                /* Now allow up to 1024 unique devices */
-#define SAMPLING_INTERVAL_MS 7000      /* Interval of sampling: 7 seconds */
-#define HASH_SIZE 1024                  /* Increased hash table size to 1024 */
-#define HASH_MASK (HASH_SIZE - 1)
+#define MAX_DEVICES 50               /* Máximo número de dispositivos */
+#define SAMPLING_INTERVAL_MS 5000    /* Intervalo de muestreo: 3 segundos */
+#define HASH_SIZE 64                 /* Potencia de 2, mayor que 4/3 * MAX_DEVICES */
+#define HASH_MASK (HASH_SIZE - 1)    /* Máscara para operaciones módulo */
 
 /* Estados posibles de cada entrada en la tabla hash */
 enum entry_state {
     ENTRY_EMPTY,     // Slot nunca usado
     ENTRY_OCCUPIED,  // Slot con datos válidos
-    ENTRY_DELETED    // Slot antes usado pero ahora borrado
+    ENTRY_DELETED    // Slot antes usadoo pero ahora borrado
 };
 
 struct __packed device_data {
     uint8_t addr[6];          /* Dirección MAC */
     uint8_t addr_type;        /* Tipo de dirección */
     uint8_t adv_type;         /* Tipo de advertisement */
-    int8_t  rssi;             /* Valor RSSI */
-    uint8_t data_len;         /* Longitud de datos */
-    uint8_t data[31];         /* Datos del advertisement */
-    uint8_t n_adv;            /* Número de advertisements de esta MAC */
+    int8_t  rssi;            /* Valor RSSI */
+    uint8_t data_len;        /* Longitud de datos */
+    uint8_t data[31];        /* Datos del advertisement */
+    uint8_t n_adv;           /* Número de advertisements de esta MAC */
 };
 
 /* Estructura de la cabecera del buffer */
@@ -36,7 +36,7 @@ struct __packed buffer_header {
     uint8_t header[UART_HEADER_LENGTH];    /* [0x55, 0x55, 0x55, 0x55] */
     uint8_t sequence;                      /* Número de secuencia */
     uint16_t n_adv_raw;                    /* Contador eventos de recepción */
-    uint16_t n_mac;                         /* Nº MACs únicas en buffer */
+    uint8_t n_mac;                         /* Nº MACs únicas en buffer */
 };
 
 /* Estructura para cada entrada en la tabla hash */
@@ -76,13 +76,13 @@ static struct device_data *find_or_add_device(const bt_addr_le_t *addr) {
         // Slot libre encontrado
         if (hash_table[index].state != ENTRY_OCCUPIED) {
             // Verificar límites
-            if (buffer_header.n_mac >= MAX_DEVICES) {
-                LOG_WRN("Buffer lleno: n_mac = %d", MAX_DEVICES);
+            if (buffer_header.n_mac >= 255) {
+                LOG_WRN("Buffer lleno: N_MAC = 255");
                 return NULL;
             }
             
             if (hash_entries >= MAX_DEVICES) {
-                LOG_WRN("Buffer lleno: MAX_DEVICES alcanzado (%d)", MAX_DEVICES);
+                LOG_WRN("Buffer lleno: MAX_DEVICES alcanzado");
                 return NULL;
             }
             
@@ -122,12 +122,8 @@ static void scan_cb(const bt_addr_le_t *addr, int8_t rssi,
     device->adv_type = adv_type;
     device->rssi = rssi;
     device->data_len = MIN(buf->len, sizeof(device->data));
-    
-    // Primero limpiamos todo el buffer con ceros
     memset(device->data, 0, sizeof(device->data));
-    // Luego copiamos los datos reales
     memcpy(device->data, buf->data, device->data_len);
-    
     device->n_adv++;
 }
 
@@ -156,8 +152,8 @@ static void reset_buffer(void) {
     memset(hash_table, 0, sizeof(hash_table));
     memset(buffer_header.header, UART_HEADER_MAGIC, UART_HEADER_LENGTH);
     buffer_header.sequence = msg_sequence++;
-    buffer_header.n_mac = 0;     
-    buffer_header.n_adv_raw = 0; 
+    buffer_header.n_mac = 0;     // Explícito
+    buffer_header.n_adv_raw = 0; // Explícito
     hash_entries = 0;
 }
 

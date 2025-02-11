@@ -18,7 +18,7 @@ class MQTTMongoSubscriber:
                  mongo_uri="mongodb://localhost:27017/",
                  log_level="info"):
         """Initialize MQTT subscriber with MongoDB connection
-        Expects messages with updated format supporting up to 1024 devices
+        Expects messages with updated format supporting up to 50 devices.
         Header format:
         - 4 bytes: Magic (0x55555555)
         - 1 byte:  Sequence
@@ -45,9 +45,9 @@ class MQTTMongoSubscriber:
         # Connect to MongoDB
         try:
             self.mongo_client = MongoClient(mongo_uri,
-                                          serverSelectionTimeoutMS=5000,
-                                          connectTimeoutMS=5000,
-                                          socketTimeoutMS=5000)
+                                            serverSelectionTimeoutMS=5000,
+                                            connectTimeoutMS=5000,
+                                            socketTimeoutMS=5000)
             self.mongo_client.server_info()  # Test connection
             self.db = self.mongo_client.ble_scanner
             self.collection = self.db.session3
@@ -77,7 +77,7 @@ class MQTTMongoSubscriber:
             self.logger.error(f"Error connecting to MQTT broker: {e}")
             raise
 
-        # Create a thread-safe queue and start a background worker for MongoDB inserts.
+        # Create a thread-safe queue and start a background worker for immediate MongoDB inserts.
         self.message_queue = queue.Queue()
         self.mongo_worker = threading.Thread(target=self._process_messages, daemon=True)
         self.mongo_worker.start()
@@ -143,20 +143,19 @@ class MQTTMongoSubscriber:
             # Convert ISO format timestamp string back to datetime
             payload['timestamp'] = datetime.fromisoformat(payload['timestamp'])
             
-            # Validación adicional para el nuevo rango de dispositivos
+            # Validate device count
             n_devices = len(payload.get('devices', []))
-            if n_devices > 1024:
+            if n_devices > 50:
                 self.logger.warning(f"Received more devices than expected: {n_devices}")
             
-            # Log message details
             self.logger.info(
                 f"Message #{self.messages_received} - "
                 f"Sequence: {payload.get('sequence', 'N/A')}, "
-                f"Devices: {n_devices}/1024, "  # Actualizado para mostrar capacidad
+                f"Devices: {n_devices}/50, "
                 f"N_ADV_RAW: {payload.get('n_adv_raw', 'N/A')}"
             )
             
-            # Instead of inserting synchronously, enqueue the payload
+            # Enqueue the payload for immediate MongoDB insertion
             self.message_queue.put(payload)
             
         except json.JSONDecodeError as e:
@@ -167,35 +166,18 @@ class MQTTMongoSubscriber:
             self.logger.error(f"Raw message: {msg.payload}")
 
     def _process_messages(self):
-        """Worker thread to process messages from the queue and insert into MongoDB in bulk"""
-        batch = []
-        batch_size = 10  # Adjust batch size as needed.
-        flush_interval = 5  # Flush every 5 seconds.
-        last_flush = time.time()
-
+        """Worker thread to immediately insert each received message into MongoDB"""
         while self.running or not self.message_queue.empty():
             try:
                 payload = self.message_queue.get(timeout=1)
-                batch.append(payload)
+                self.collection.insert_one(payload)
+                new_devices = len(payload.get('devices', []))
+                self.devices_processed += new_devices
+                self.logger.info(f"Inserted message: Sequence: {payload.get('sequence', 'N/A')}, Devices: {new_devices}")
             except queue.Empty:
-                pass
-
-            # If enough items are queued or flush interval passed, perform bulk insert.
-            if (len(batch) >= batch_size) or ((time.time() - last_flush) >= flush_interval and batch):
-                try:
-                    result = self.collection.insert_many(batch)
-                    new_devices = sum(len(item.get('devices', [])) for item in batch)
-                    self.devices_processed += new_devices
-                    self.logger.info(
-                        f"Stored batch to MongoDB - IDs: {result.inserted_ids}, "
-                        f"Total messages: {self.messages_received}, "
-                        f"Total devices: {self.devices_processed}"
-                    )
-                except Exception as e:
-                    self.logger.error(f"Bulk insert error: {e}")
-                finally:
-                    batch = []
-                    last_flush = time.time()
+                continue
+            except Exception as e:
+                self.logger.error(f"Error inserting record: {e}")
 
     def signal_handler(self, signum, frame):
         """Signal handler for clean shutdown"""
@@ -214,7 +196,7 @@ class MQTTMongoSubscriber:
                     f"Status - Messages received: {self.messages_received}, "
                     f"Devices processed: {self.devices_processed}"
                 )
-                time.sleep(10)  # Log stats every 10 seconds
+                time.sleep(10)
         except KeyboardInterrupt:
             self.logger.info("Received keyboard interrupt")
         except Exception as e:
@@ -233,7 +215,6 @@ class MQTTMongoSubscriber:
             self.mongo_client.close()
             self.logger.info("MongoDB connection closed")
             
-            # Wait for the MongoDB worker thread to finish processing any remaining messages.
             if self.mongo_worker.is_alive():
                 self.mongo_worker.join(timeout=5)
 
@@ -244,25 +225,25 @@ class MQTTMongoSubscriber:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='MQTT Subscriber to MongoDB')
     parser.add_argument('--mqtt-broker', type=str,
-                      default="localhost",
-                      help='MQTT broker address (default: localhost)')
+                        default="localhost",
+                        help='MQTT broker address (default: localhost)')
     parser.add_argument('--mqtt-port', type=int,
-                      default=1883,
-                      help='MQTT broker port (default: 1883)')
+                        default=1883,
+                        help='MQTT broker port (default: 1883)')
     parser.add_argument('--mqtt-topic', type=str,
-                      default="admin/reader",
-                      help='MQTT topic to subscribe to (default: admin/reader)')
+                        default="admin/reader",
+                        help='MQTT topic to subscribe to (default: admin/reader)')
     parser.add_argument('--mqtt-username', type=str,
-                      help='MQTT username (optional)')
+                        help='MQTT username (optional)')
     parser.add_argument('--mqtt-password', type=str,
-                      help='MQTT password (optional)')
+                        help='MQTT password (optional)')
     parser.add_argument('--mongo-uri', type=str,
-                      default="mongodb://localhost:27017/",
-                      help='MongoDB URI (default: mongodb://localhost:27017/)')
+                        default="mongodb://localhost:27017/",
+                        help='MongoDB URI (default: mongodb://localhost:27017/)')
     parser.add_argument('--log-level', type=str,
-                      choices=['info', 'debug'],
-                      default='info',
-                      help='Logging level (default: info)')
+                        choices=['info', 'debug'],
+                        default='info',
+                        help='Logging level (default: info)')
     
     args = parser.parse_args()
     
