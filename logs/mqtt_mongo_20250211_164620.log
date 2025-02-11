@@ -1,0 +1,34 @@
+2025-02-11 16:46:20,706 - INFO - Script started: 2025-02-11 16:46:20
+2025-02-11 16:46:20,745 - INFO - Connected to MongoDB at mongodb://localhost:27017/
+2025-02-11 16:46:20,746 - INFO - Connecting to MQTT broker at localhost:1883
+2025-02-11 16:46:20,774 - INFO - MQTT client setup complete
+2025-02-11 16:46:20,775 - INFO - Starting MQTT subscriber...
+2025-02-11 16:46:20,776 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:46:20,777 - INFO - Connected to MQTT Broker successfully
+2025-02-11 16:46:20,777 - INFO - Subscribed to topic: admin/reader
+2025-02-11 16:46:20,779 - INFO - Subscription confirmed with reason codes: [ReasonCode(Suback, 'Granted QoS 1')]
+2025-02-11 16:46:30,778 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:46:40,779 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:46:50,780 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:47:00,780 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:47:10,782 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:47:20,783 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:47:30,784 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:47:40,785 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:47:50,786 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:48:00,787 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:48:10,788 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:48:20,789 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:48:30,790 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:48:40,791 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:48:50,792 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:49:00,793 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:49:10,794 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:49:20,796 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:49:30,796 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:49:40,798 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:49:50,798 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:50:00,800 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:50:07,011 - INFO - Termination signal received
+2025-02-11 16:50:11,022 - ERROR - Error closing connections: MQTTMongoSubscriber.on_disconnect() takes 5 positional arguments but 6 were given
+2025-02-11 16:50:11,023 - ERROR - Error closing connections: MQTTMongoSubscriber.on_disconnect() takes 5 positional arguments but 6 were given

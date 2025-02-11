@@ -16,11 +16,11 @@ class LogLevel(str, Enum):
     DEBUG = "debug"
 
 class UARTMQTTPublisher(UARTReceiver):
-    # UART Protocol Constants
+    # UART Protocol Constants - Matching C definitions
     HEADER_MAGIC = b'\x55\x55\x55\x55'
-    HEADER_LENGTH = 9
-    DEVICE_LENGTH = 42
-    MAX_DEVICES = 50  # Updated buffer size: 50 devices
+    HEADER_LENGTH = 8  # 4 (magic) + 1 (sequence) + 2 (n_adv_raw) + 1 (n_mac)
+    DEVICE_LENGTH = 42  # 6 + 1 + 1 + 1 + 1 + 31 + 1 = 42 bytes
+    MAX_DEVICES = 50
 
     def __init__(self, port='/dev/ttyUSB0', baudrate=115200,
                  mqtt_broker="localhost", mqtt_port=1883,
@@ -196,44 +196,39 @@ class UARTMQTTPublisher(UARTReceiver):
                     self.logger.info(f"Total buffers processed: {processed_buffers}")
                     break
 
-                # Read with timeout
+                # Look for header magic
                 byte = self.serial.read()
-                if not byte:  # Timeout occurred, no data available
+                if not byte:  # Timeout occurred
                     continue
 
                 if byte == b'\x55':
                     potential_header = b'\x55' + self.serial.read(3)
                     if potential_header == self.HEADER_MAGIC:
                         self.logger.debug("UART header found")
-                        error_count = 0  # Reset error count on successful read
-                    else:
-                        continue
-
-                    # Read the complete buffer
-                    header_data = potential_header + self.serial.read(self.HEADER_LENGTH - 4)
-                    if len(header_data) != self.HEADER_LENGTH:
-                        self.logger.warning("Incomplete header received")
-                        continue
-
-                    # Extract n_mac from header to know how many devices to read
-                    n_mac = int.from_bytes(header_data[7:9], byteorder='little')
-                    
-                    # Read all device data
-                    device_data = b''
-                    for _ in range(n_mac):
-                        data = self.serial.read(self.DEVICE_LENGTH)
-                        if len(data) != self.DEVICE_LENGTH:
-                            self.logger.warning("Incomplete device data received")
-                            break
-                        device_data += data
-
-                    # Combine header and device data
-                    complete_buffer = header_data + device_data
-                    
-                    # Publish the raw buffer
-                    if self._publish_buffer(complete_buffer):
-                        processed_buffers += 1
-                        self.logger.debug(f"Buffer #{processed_buffers} processed and published")
+                        
+                        # Read rest of header (sequence + n_adv_raw + n_mac)
+                        header_rest = self.serial.read(4)  # 1 + 2 + 1 bytes
+                        if len(header_rest) != 4:
+                            self.logger.warning("Incomplete header")
+                            continue
+                            
+                        n_mac = header_rest[3]  # Last byte is n_mac
+                        self.logger.debug(f"Reading {n_mac} devices")
+                        
+                        # Read device data
+                        device_data = b''
+                        for i in range(n_mac):
+                            data = self.serial.read(self.DEVICE_LENGTH)
+                            if len(data) != self.DEVICE_LENGTH:
+                                self.logger.warning(f"Incomplete device data for device {i+1}")
+                                break
+                            device_data += data
+                        
+                        # Combine all data and publish
+                        complete_buffer = self.HEADER_MAGIC + header_rest + device_data
+                        if self._publish_buffer(complete_buffer):
+                            processed_buffers += 1
+                            self.logger.debug(f"Published buffer with {n_mac} devices")
 
             except serial.SerialException as e:
                 if "returned no data" in str(e):
@@ -289,7 +284,7 @@ class UARTMQTTPublisher(UARTReceiver):
             # Parse using uint16_t for n_adv_raw and n_mac
             sequence = int.from_bytes(data[4:5], byteorder='little')
             n_adv_raw = int.from_bytes(data[5:7], byteorder='little')  # 2 bytes
-            n_mac = int.from_bytes(data[7:9], byteorder='little')      # 2 bytes
+            n_mac = int.from_bytes(data[7:8], byteorder='little')      # 1 byte
             
             return {
                 'sequence': sequence,
@@ -312,7 +307,7 @@ class UARTMQTTPublisher(UARTReceiver):
             rssi = int.from_bytes(data[8:9], byteorder='little', signed=True)
             data_len = int.from_bytes(data[9:10], byteorder='little')
             adv_data = data[10:26]  # 16 bytes of data
-            n_adv = int.from_bytes(data[26:28], byteorder='little')
+            n_adv = int.from_bytes(data[26:27], byteorder='little')
             
             return {
                 'mac': mac,

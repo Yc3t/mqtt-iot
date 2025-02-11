@@ -13,10 +13,10 @@ import queue
 import threading
 
 class MQTTMongoSubscriber:
-    # UART Protocol Constants
+    # UART Protocol Constants - Matching C definitions
     HEADER_MAGIC = b'\x55\x55\x55\x55'
-    HEADER_LENGTH = 9
-    DEVICE_LENGTH = 42
+    HEADER_LENGTH = 8  # 4 (magic) + 1 (sequence) + 2 (n_adv_raw) + 1 (n_mac)
+    DEVICE_LENGTH = 42  # 6 + 1 + 1 + 1 + 1 + 31 + 1 = 42 bytes
     MAX_DEVICES = 50
 
     def __init__(self, mqtt_broker="localhost", mqtt_port=1883,
@@ -29,7 +29,7 @@ class MQTTMongoSubscriber:
         - 4 bytes: Magic (0x55555555)
         - 1 byte:  Sequence
         - 2 bytes: n_adv_raw (uint16_t)
-        - 2 bytes: n_mac (uint16_t)
+        - 1 byte:  n_mac
         """
         self.running = True
         self.mqtt_topic = mqtt_topic
@@ -142,9 +142,9 @@ class MQTTMongoSubscriber:
             if len(data) != self.HEADER_LENGTH:
                 return None
             
-            sequence = int.from_bytes(data[4:5], byteorder='little')
+            sequence = data[4]  # byte after magic
             n_adv_raw = int.from_bytes(data[5:7], byteorder='little')
-            n_mac = int.from_bytes(data[7:9], byteorder='little')
+            n_mac = data[7]
             
             return {
                 'sequence': sequence,
@@ -162,12 +162,12 @@ class MQTTMongoSubscriber:
                 return None
             
             mac = ':'.join([f"{b:02X}" for b in data[0:6]])
-            addr_type = int.from_bytes(data[6:7], byteorder='little')
-            adv_type = int.from_bytes(data[7:8], byteorder='little')
+            addr_type = data[6]
+            adv_type = data[7]
             rssi = int.from_bytes(data[8:9], byteorder='little', signed=True)
-            data_len = int.from_bytes(data[9:10], byteorder='little')
-            adv_data = data[10:26]  # 16 bytes of data
-            n_adv = int.from_bytes(data[26:28], byteorder='little')
+            data_len = data[9]
+            adv_data = data[10:41]  # 31 bytes of advertisement data
+            n_adv = data[41]
             
             return {
                 'mac': mac,
@@ -175,7 +175,7 @@ class MQTTMongoSubscriber:
                 'adv_type': adv_type,
                 'rssi': rssi,
                 'data_len': data_len,
-                'data': adv_data.hex(),
+                'data': adv_data[:data_len].hex(),  # Only convert actual data
                 'n_adv': n_adv
             }
         except Exception as e:
