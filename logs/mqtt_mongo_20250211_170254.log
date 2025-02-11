@@ -53,3 +53,23 @@
 2025-02-11 17:10:14,432 - INFO - Status - Messages received: 0, Devices processed: 0
 2025-02-11 17:10:24,434 - INFO - Status - Messages received: 0, Devices processed: 0
 2025-02-11 17:10:34,435 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:10:44,436 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:10:54,437 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:11:04,438 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:11:14,439 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:11:24,440 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:11:25,379 - INFO - Message #1 - Sequence: 161, Devices: 4/50, N_ADV_RAW: 42
+2025-02-11 17:11:25,381 - INFO - Inserted message: Sequence: 161, Devices: 4
+2025-02-11 17:11:34,441 - INFO - Status - Messages received: 1, Devices processed: 4
+2025-02-11 17:11:44,442 - INFO - Status - Messages received: 1, Devices processed: 4
+2025-02-11 17:11:54,444 - INFO - Status - Messages received: 1, Devices processed: 4
+2025-02-11 17:11:55,368 - INFO - Message #2 - Sequence: 166, Devices: 2/50, N_ADV_RAW: 41
+2025-02-11 17:11:55,371 - INFO - Inserted message: Sequence: 166, Devices: 2
+2025-02-11 17:12:04,444 - INFO - Status - Messages received: 2, Devices processed: 6
+2025-02-11 17:12:14,445 - INFO - Status - Messages received: 2, Devices processed: 6
+2025-02-11 17:12:24,446 - INFO - Status - Messages received: 2, Devices processed: 6
+2025-02-11 17:12:34,447 - INFO - Status - Messages received: 2, Devices processed: 6
+2025-02-11 17:12:44,448 - INFO - Status - Messages received: 2, Devices processed: 6
+2025-02-11 17:12:45,375 - INFO - Message #3 - Sequence: 176, Devices: 2/50, N_ADV_RAW: 41
+2025-02-11 17:12:45,377 - INFO - Inserted message: Sequence: 176, Devices: 2
+2025-02-11 17:12:54,450 - INFO - Status - Messages received: 3, Devices processed: 8

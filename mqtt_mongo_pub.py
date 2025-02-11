@@ -173,7 +173,7 @@ class UARTMQTTPublisher(UARTReceiver):
             self.serial = serial.Serial(
                 port=self.port,
                 baudrate=self.baudrate,
-                timeout=0.1
+                timeout=20
             )
             self.serial.reset_input_buffer()
             self.serial.reset_output_buffer()
@@ -189,16 +189,20 @@ class UARTMQTTPublisher(UARTReceiver):
         self.logger.info("Termination signal received")
         
     def receive_messages(self, duration=None):
-        """Receive UART buffers and publish them immediately to MQTT using a combined tracker approach."""
+        """Receive UART buffers and publish them immediately to MQTT using a combined tracker approach.
+        Gracefully handles serial errors by rate limiting log messages.
+        """
         start_time = time.time()
         processed_buffers = 0
+        # Timestamp to control error logging frequency for serial errors.
+        last_serial_error_log = 0  
+        error_log_interval = 5  # seconds
 
         self.logger.info("Starting combined capture of BLE messages...")
         self.logger.debug(f"Expecting data every {self.SAMPLING_INTERVAL} seconds")
 
         while self.running:
             try:
-                # Check for duration limit if provided
                 if duration and (time.time() - start_time) >= duration:
                     self.logger.info(f"Execution time ({duration}s) completed")
                     break
@@ -208,7 +212,6 @@ class UARTMQTTPublisher(UARTReceiver):
                 while True:
                     byte = self.serial.read(1)
                     if not byte:
-                        # No data yet, wait a bit.
                         time.sleep(0.05)
                         continue
                     if byte == b'\x55':
@@ -257,8 +260,11 @@ class UARTMQTTPublisher(UARTReceiver):
                     self.logger.warning("Failed to publish buffer")
 
             except serial.SerialException as e:
-                self.logger.error(f"Serial error: {e}")
-                time.sleep(1)
+                now = time.time()
+                if now - last_serial_error_log > error_log_interval:
+                    self.logger.error(f"Serial error: {e}")
+                    last_serial_error_log = now
+                time.sleep(0.1)
                 continue
 
             except Exception as e:
