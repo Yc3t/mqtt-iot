@@ -19,3 +19,12 @@
 2025-02-11 16:59:07,154 - INFO - Status - Messages received: 0, Devices processed: 0
 2025-02-11 16:59:17,155 - INFO - Status - Messages received: 0, Devices processed: 0
 2025-02-11 16:59:27,155 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:59:37,156 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:59:47,157 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:59:57,158 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:00:07,159 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:00:17,159 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:00:19,000 - INFO - Termination signal received
+2025-02-11 17:00:19,177 - INFO - Termination signal received
+2025-02-11 17:00:27,848 - ERROR - Error closing connections: MQTTMongoSubscriber.on_disconnect() takes 5 positional arguments but 6 were given
+2025-02-11 17:00:27,850 - ERROR - Error closing connections: MQTTMongoSubscriber.on_disconnect() takes 5 positional arguments but 6 were given

@@ -21,13 +21,34 @@ class UARTMQTTPublisher(UARTReceiver):
     HEADER_LENGTH = 8  # 4 (magic) + 1 (sequence) + 2 (n_adv_raw) + 1 (n_mac)
     DEVICE_LENGTH = 42  # 6 + 1 + 1 + 1 + 1 + 31 + 1 = 42 bytes
     MAX_DEVICES = 64  # Match HASH_SIZE from C code (64)
+    SAMPLING_INTERVAL = 5.0  # Match SAMPLING_INTERVAL_MS from C code (5000ms)
 
     def __init__(self, port='/dev/ttyUSB0', baudrate=115200,
                  mqtt_broker="localhost", mqtt_port=1883,
                  mqtt_topic="admin/reader", mqtt_username=None, mqtt_password=None,
                  log_level="info"):
         """Initialize UART receiver with MQTT publisher"""
-        # Store port, baudrate and MQTT topic as instance variables
+        # Setup logging first
+        self._setup_logging(log_level)
+        self.logger.info(f"Script started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        # Initialize serial port
+        try:
+            self.serial = serial.Serial(
+                port=port,
+                baudrate=baudrate,
+                timeout=0  # Non-blocking reads
+            )
+            self.logger.info(f"Opened serial port {port} at {baudrate} baud")
+            
+            # Flush any existing data
+            self.serial.reset_input_buffer()
+            self.serial.reset_output_buffer()
+            
+        except serial.SerialException as e:
+            self.logger.error(f"Failed to open serial port: {e}")
+            raise
+            
         self.port = port
         self.baudrate = baudrate
         self.running = True
@@ -38,21 +59,6 @@ class UARTMQTTPublisher(UARTReceiver):
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGHUP, self.signal_handler)
         signal.signal(signal.SIGQUIT, self.signal_handler)
-        
-        # Setup logging first
-        self._setup_logging()
-        
-        # Initialize serial port with non-blocking reads
-        try:
-            self.serial = serial.Serial(
-                port=port,
-                baudrate=baudrate,
-                timeout=0  # Non-blocking reads
-            )
-            self.logger.info(f"Opened serial port {port} at {baudrate} baud")
-        except serial.SerialException as e:
-            self.logger.error(f"Failed to open serial port: {e}")
-            raise
         
         # Setup MQTT Client
         try:
@@ -74,7 +80,7 @@ class UARTMQTTPublisher(UARTReceiver):
             self.logger.error(f"Error connecting to MQTT broker: {e}")
             raise
 
-    def _setup_logging(self):
+    def _setup_logging(self, log_level):
         """Configure logging system"""
         log_dir = "logs"
         if not os.path.exists(log_dir):
@@ -186,9 +192,10 @@ class UARTMQTTPublisher(UARTReceiver):
         """Receive UART buffers and publish them immediately to MQTT"""
         start_time = time.time()
         processed_buffers = 0
-        buffer = bytearray()
+        last_data_time = time.time()
         
         self.logger.info("Starting buffer reception...")
+        self.logger.debug(f"Expecting data every {self.SAMPLING_INTERVAL} seconds")
         
         while self.running:
             try:
@@ -198,44 +205,56 @@ class UARTMQTTPublisher(UARTReceiver):
 
                 # Read available data
                 if self.serial.in_waiting:
-                    data = self.serial.read(self.serial.in_waiting)
-                    buffer.extend(data)
+                    self.logger.debug(f"Data available: {self.serial.in_waiting} bytes")
+                    byte = self.serial.read()
+                    
+                    if byte == b'\x55':
+                        self.logger.debug("Found potential header start")
+                        potential_header = b'\x55' + self.serial.read(3)
+                        
+                        if potential_header == self.HEADER_MAGIC:
+                            self.logger.debug("Valid header magic found")
+                            
+                            # Read rest of header
+                            header_rest = self.serial.read(4)  # sequence + n_adv_raw + n_mac
+                            if len(header_rest) != 4:
+                                self.logger.warning("Incomplete header rest")
+                                continue
+                            
+                            n_mac = header_rest[3]  # Last byte is n_mac
+                            self.logger.debug(f"Header indicates {n_mac} devices")
+                            
+                            # Read all device data
+                            device_data = self.serial.read(n_mac * self.DEVICE_LENGTH)
+                            if len(device_data) != n_mac * self.DEVICE_LENGTH:
+                                self.logger.warning(
+                                    f"Incomplete device data: got {len(device_data)} bytes, "
+                                    f"expected {n_mac * self.DEVICE_LENGTH}"
+                                )
+                                continue
+                            
+                            # Combine all parts
+                            complete_buffer = potential_header + header_rest + device_data
+                            
+                            # Publish
+                            if self._publish_buffer(complete_buffer):
+                                processed_buffers += 1
+                                last_data_time = time.time()
+                                self.logger.info(
+                                    f"Published buffer #{processed_buffers} with {n_mac} devices"
+                                )
+                
                 else:
-                    time.sleep(0.1)  # Short sleep if no data
-                    continue
-
-                # Process complete buffers
-                while len(buffer) >= self.HEADER_LENGTH:
-                    # Look for magic header
-                    magic_pos = buffer.find(self.HEADER_MAGIC)
-                    if magic_pos == -1:
-                        if len(buffer) > 4:
-                            buffer = buffer[-4:]  # Keep last 4 bytes for partial magic
-                        break
-                    
-                    if magic_pos > 0:
-                        buffer = buffer[magic_pos:]  # Align to magic header
-                    
-                    if len(buffer) < self.HEADER_LENGTH:
-                        break  # Wait for more data
-                    
-                    # Parse header
-                    n_mac = buffer[7]  # Last byte of header
-                    expected_length = self.HEADER_LENGTH + (n_mac * self.DEVICE_LENGTH)
-                    
-                    if len(buffer) < expected_length:
-                        break  # Wait for complete message
-                    
-                    # Extract complete message
-                    message = buffer[:expected_length]
-                    buffer = buffer[expected_length:]
-                    
-                    # Publish the message
-                    if self._publish_buffer(message):
-                        processed_buffers += 1
-                        self.logger.info(
-                            f"Published buffer #{processed_buffers} with {n_mac} devices"
+                    # Check if we haven't received data for too long
+                    time_since_last = time.time() - last_data_time
+                    if time_since_last > self.SAMPLING_INTERVAL * 2:
+                        self.logger.warning(
+                            f"No data received for {time_since_last:.1f} seconds "
+                            f"(expected every {self.SAMPLING_INTERVAL} seconds)"
                         )
+                        last_data_time = time.time()  # Reset to prevent spam
+                    
+                    time.sleep(0.1)  # Short sleep when no data
 
             except serial.SerialException as e:
                 self.logger.error(f"Serial error: {e}")
