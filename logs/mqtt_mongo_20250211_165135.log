@@ -1,0 +1,9 @@
+2025-02-11 16:51:35,756 - INFO - Script started: 2025-02-11 16:51:35
+2025-02-11 16:51:35,797 - INFO - Connected to MongoDB at mongodb://localhost:27017/
+2025-02-11 16:51:35,798 - INFO - Connecting to MQTT broker at localhost:1883
+2025-02-11 16:51:35,825 - INFO - MQTT client setup complete
+2025-02-11 16:51:35,828 - INFO - Starting MQTT subscriber...
+2025-02-11 16:51:35,831 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:51:35,832 - INFO - Connected to MQTT Broker successfully
+2025-02-11 16:51:35,832 - INFO - Subscribed to topic: admin/reader
+2025-02-11 16:51:35,835 - INFO - Subscription confirmed with reason codes: [ReasonCode(Suback, 'Granted QoS 1')]

@@ -42,19 +42,22 @@ class UARTMQTTPublisher(UARTReceiver):
         # Setup logging first
         self._setup_logging()
         
-        # Check for crash recovery
-        self._check_crash_recovery()
-        
-        self.logger.info("Starting UART MQTT Publisher")
-        
-        # Call parent class initialization
-        super().__init__(port, baudrate)
+        # Initialize serial port with appropriate timeout
+        try:
+            self.serial = serial.Serial(
+                port=port,
+                baudrate=baudrate,
+                timeout=5.0  # Match sampling interval (5 seconds)
+            )
+            self.logger.info(f"Opened serial port {port} at {baudrate} baud")
+        except serial.SerialException as e:
+            self.logger.error(f"Failed to open serial port: {e}")
+            raise
         
         # Setup MQTT Client
         try:
             self.mqtt_client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
             
-            # Set username and password if provided
             if mqtt_username:
                 self.logger.info("Using MQTT authentication")
                 self.mqtt_client.username_pw_set(mqtt_username, mqtt_password)
@@ -183,9 +186,6 @@ class UARTMQTTPublisher(UARTReceiver):
         """Receive UART buffers and publish them immediately to MQTT"""
         start_time = time.time()
         processed_buffers = 0
-        error_count = 0
-        MAX_ERRORS = 3
-        RETRY_DELAY = 7
         
         self.logger.info("Starting buffer reception...")
         
@@ -193,70 +193,64 @@ class UARTMQTTPublisher(UARTReceiver):
             try:
                 if duration and (time.time() - start_time) >= duration:
                     self.logger.info(f"Execution time ({duration}s) completed")
-                    self.logger.info(f"Total buffers processed: {processed_buffers}")
                     break
 
-                # Look for header magic
-                byte = self.serial.read()
-                if not byte:  # Timeout occurred
+                # Read with a longer timeout matching the sampling interval
+                header = self.serial.read(4)
+                if not header:  # No data available
                     continue
 
-                if byte == b'\x55':
-                    potential_header = b'\x55' + self.serial.read(3)
-                    if potential_header == self.HEADER_MAGIC:
-                        self.logger.debug("UART header found")
+                # Check for magic header
+                if header == self.HEADER_MAGIC:
+                    self.logger.debug("UART header found")
+                    
+                    # Read the rest of the header in one go
+                    header_rest = self.serial.read(4)  # sequence + n_adv_raw + n_mac
+                    if len(header_rest) != 4:
+                        self.logger.warning("Incomplete header received")
+                        continue
+                    
+                    # Get number of devices from header
+                    n_mac = header_rest[3]
+                    if n_mac > self.MAX_DEVICES:
+                        self.logger.warning(f"Invalid n_mac value: {n_mac}")
+                        continue
                         
-                        # Read rest of header (sequence + n_adv_raw + n_mac)
-                        header_rest = self.serial.read(4)  # 1 + 2 + 1 bytes
-                        if len(header_rest) != 4:
-                            self.logger.warning("Incomplete header")
-                            continue
-                            
-                        n_mac = header_rest[3]  # Last byte is n_mac
-                        self.logger.debug(f"Reading {n_mac} devices")
-                        
-                        # Read device data
-                        device_data = b''
-                        for i in range(n_mac):
-                            data = self.serial.read(self.DEVICE_LENGTH)
-                            if len(data) != self.DEVICE_LENGTH:
-                                self.logger.warning(f"Incomplete device data for device {i+1}")
-                                break
-                            device_data += data
-                        
-                        # Combine all data and publish
-                        complete_buffer = self.HEADER_MAGIC + header_rest + device_data
-                        if self._publish_buffer(complete_buffer):
-                            processed_buffers += 1
-                            self.logger.debug(f"Published buffer with {n_mac} devices")
+                    self.logger.debug(f"Reading {n_mac} devices")
+                    
+                    # Read all device data at once
+                    expected_device_data_length = n_mac * self.DEVICE_LENGTH
+                    device_data = self.serial.read(expected_device_data_length)
+                    
+                    if len(device_data) != expected_device_data_length:
+                        self.logger.warning(
+                            f"Incomplete device data: got {len(device_data)} bytes, "
+                            f"expected {expected_device_data_length}"
+                        )
+                        continue
+                    
+                    # Combine and publish
+                    complete_buffer = header + header_rest + device_data
+                    if self._publish_buffer(complete_buffer):
+                        processed_buffers += 1
+                        self.logger.info(
+                            f"Published buffer #{processed_buffers} with {n_mac} devices"
+                        )
 
             except serial.SerialException as e:
                 if "returned no data" in str(e):
-                    self.logger.debug("Serial timeout, no data available.")
+                    # This is normal when no data is available
                     continue
-                error_count += 1
-                self.logger.error(f"Serial communication error: {e}")
-                if error_count >= MAX_ERRORS:
-                    self.logger.error(f"Too many serial errors ({error_count}). Attempting reset...")
-                    if not self._reset_serial():
-                        self.logger.error("Failed to recover serial connection. Exiting.")
-                        break
-                    error_count = 0
-                time.sleep(RETRY_DELAY)
-            except KeyboardInterrupt:
-                self.logger.info("Reception interrupted by user")
-                break
+                self.logger.error(f"Serial error: {e}")
+                time.sleep(1)  # Prevent tight loop on error
+                continue
+                
             except Exception as e:
                 self.logger.error(f"Unexpected error: {e}")
-                error_count += 1
-                if error_count >= MAX_ERRORS:
-                    self.logger.error(f"Too many errors ({error_count}). Exiting.")
-                    break
-                time.sleep(RETRY_DELAY)
+                time.sleep(1)
                 continue
 
         self.logger.info(f"Total buffers processed: {processed_buffers}")
-        self.logger.info(f"Script finished: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
     def close(self):
         """Close all connections"""
