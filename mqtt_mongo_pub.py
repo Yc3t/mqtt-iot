@@ -137,34 +137,14 @@ class UARTMQTTPublisher(UARTReceiver):
         else:
             self.logger.warning(f"Message {mid} failed to publish with reason code: {reason_code}")
 
-    def _publish_buffer(self, header, devices):
-        """Publish the buffer immediately to MQTT topic"""
+    def _publish_buffer(self, raw_data):
+        """Publish the raw buffer immediately to MQTT topic"""
         try:
-            document = {
-                'timestamp': datetime.now().isoformat(),
-                'sequence': header['sequence'],
-                'n_adv_raw': header['n_adv_raw'],
-                'n_mac': header['n_mac'],
-                'devices': []
-            }
-
-            for device in devices:
-                device_doc = {
-                    'mac': device['mac'],
-                    'addr_type': device['addr_type'],
-                    'adv_type': device['adv_type'],
-                    'rssi': device['rssi'],
-                    'data_len': device['data_len'],
-                    'data': device['data'].hex(),
-                    'n_adv': device['n_adv']
-                }
-                document['devices'].append(device_doc)
+            self.logger.debug(f"Publishing raw buffer of {len(raw_data)} bytes")
+            result = self.mqtt_client.publish(self.mqtt_topic, raw_data, qos=1)
             
-            # Publish to MQTT immediately
-            message = json.dumps(document)
-            result = self.mqtt_client.publish(self.mqtt_topic, message, qos=1)
             if result.rc == mqtt.MQTT_ERR_SUCCESS:
-                self.logger.debug(f"Buffer published - Sequence: {header['sequence']}, Devices: {len(devices)}")
+                self.logger.debug("Raw buffer published successfully")
                 return True
             else:
                 self.logger.error(f"Error publishing message: {result.rc}")
@@ -229,37 +209,33 @@ class UARTMQTTPublisher(UARTReceiver):
                     else:
                         continue
 
+                    # Read the complete buffer
                     header_data = potential_header + self.serial.read(self.HEADER_LENGTH - 4)
-                    header = self._parse_header(header_data)
-                    
-                    if not header:
-                        self.logger.warning("Error parsing header")
+                    if len(header_data) != self.HEADER_LENGTH:
+                        self.logger.warning("Incomplete header received")
                         continue
 
-                    devices = []
-                    for i in range(header['n_mac']):
-                        device_data = self.serial.read(self.DEVICE_LENGTH)
-                        if not device_data or len(device_data) != self.DEVICE_LENGTH:
+                    # Extract n_mac from header to know how many devices to read
+                    n_mac = int.from_bytes(header_data[7:9], byteorder='little')
+                    
+                    # Read all device data
+                    device_data = b''
+                    for _ in range(n_mac):
+                        data = self.serial.read(self.DEVICE_LENGTH)
+                        if len(data) != self.DEVICE_LENGTH:
                             self.logger.warning("Incomplete device data received")
                             break
-                        device = self._parse_device(device_data)
-                        if device:
-                            devices.append(device)
-                            self.logger.debug(f"Device {i+1} parsed - MAC: {device['mac']}")
+                        device_data += data
 
-                    if devices:
-                        # Publish the received buffer immediately instead of queuing it.
-                        self._publish_buffer(header, devices)
+                    # Combine header and device data
+                    complete_buffer = header_data + device_data
+                    
+                    # Publish the raw buffer
+                    if self._publish_buffer(complete_buffer):
                         processed_buffers += 1
-                        self.logger.debug(
-                            f"Buffer #{processed_buffers} processed - "
-                            f"Sequence: {header['sequence']}, "
-                            f"Devices: {len(devices)}, "
-                            f"N_ADV_RAW: {header['n_adv_raw']}"
-                        )
+                        self.logger.debug(f"Buffer #{processed_buffers} processed and published")
 
             except serial.SerialException as e:
-                # Check if the error is due to a benign timeout
                 if "returned no data" in str(e):
                     self.logger.debug("Serial timeout, no data available.")
                     continue

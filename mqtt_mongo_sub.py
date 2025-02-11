@@ -13,6 +13,12 @@ import queue
 import threading
 
 class MQTTMongoSubscriber:
+    # UART Protocol Constants
+    HEADER_MAGIC = b'\x55\x55\x55\x55'
+    HEADER_LENGTH = 9
+    DEVICE_LENGTH = 42
+    MAX_DEVICES = 50
+
     def __init__(self, mqtt_broker="localhost", mqtt_port=1883,
                  mqtt_topic="admin/reader", mqtt_username=None, mqtt_password=None,
                  mongo_uri="mongodb://localhost:27017/",
@@ -130,40 +136,116 @@ class MQTTMongoSubscriber:
         if reason_code != 0:
             self.logger.warning("Unexpected disconnection. Attempting to reconnect...")
 
+    def _parse_header(self, data):
+        """Parse UART header data"""
+        try:
+            if len(data) != self.HEADER_LENGTH:
+                return None
+            
+            sequence = int.from_bytes(data[4:5], byteorder='little')
+            n_adv_raw = int.from_bytes(data[5:7], byteorder='little')
+            n_mac = int.from_bytes(data[7:9], byteorder='little')
+            
+            return {
+                'sequence': sequence,
+                'n_adv_raw': n_adv_raw,
+                'n_mac': n_mac
+            }
+        except Exception as e:
+            self.logger.error(f"Error parsing header: {e}")
+            return None
+
+    def _parse_device(self, data):
+        """Parse device data from UART"""
+        try:
+            if len(data) != self.DEVICE_LENGTH:
+                return None
+            
+            mac = ':'.join([f"{b:02X}" for b in data[0:6]])
+            addr_type = int.from_bytes(data[6:7], byteorder='little')
+            adv_type = int.from_bytes(data[7:8], byteorder='little')
+            rssi = int.from_bytes(data[8:9], byteorder='little', signed=True)
+            data_len = int.from_bytes(data[9:10], byteorder='little')
+            adv_data = data[10:26]  # 16 bytes of data
+            n_adv = int.from_bytes(data[26:28], byteorder='little')
+            
+            return {
+                'mac': mac,
+                'addr_type': addr_type,
+                'adv_type': adv_type,
+                'rssi': rssi,
+                'data_len': data_len,
+                'data': adv_data.hex(),
+                'n_adv': n_adv
+            }
+        except Exception as e:
+            self.logger.error(f"Error parsing device data: {e}")
+            return None
+
+    def _parse_buffer(self, raw_data):
+        """Parse complete buffer from raw data"""
+        try:
+            if len(raw_data) < self.HEADER_LENGTH:
+                self.logger.error("Buffer too short for header")
+                return None
+
+            # Verify header magic
+            if raw_data[:4] != self.HEADER_MAGIC:
+                self.logger.error("Invalid header magic")
+                return None
+
+            # Parse header
+            header = self._parse_header(raw_data[:self.HEADER_LENGTH])
+            if not header:
+                return None
+
+            # Parse devices
+            devices = []
+            offset = self.HEADER_LENGTH
+            for i in range(header['n_mac']):
+                if len(raw_data) < offset + self.DEVICE_LENGTH:
+                    break
+                device_data = raw_data[offset:offset + self.DEVICE_LENGTH]
+                device = self._parse_device(device_data)
+                if device:
+                    devices.append(device)
+                    self.logger.debug(f"Device {i+1} parsed - MAC: {device['mac']}")
+                offset += self.DEVICE_LENGTH
+
+            return {
+                'timestamp': datetime.now().isoformat(),
+                **header,
+                'devices': devices
+            }
+        except Exception as e:
+            self.logger.error(f"Error parsing buffer: {e}")
+            return None
+
     def on_message(self, client, userdata, msg):
         """Callback for when a PUBLISH message is received from the server"""
         try:
-            self.logger.info(f"Received message on topic: {msg.topic}")
+            self.logger.debug(f"Received raw buffer of {len(msg.payload)} bytes")
             self.messages_received += 1
             
-            # Parse the JSON message
-            payload = json.loads(msg.payload.decode())
-            self.logger.debug(f"Raw message payload: {msg.payload.decode()[:200]}...")  # Log first 200 chars
+            # Parse the raw buffer
+            payload = self._parse_buffer(msg.payload)
+            if not payload:
+                raise ValueError("Failed to parse raw buffer")
             
-            # Convert ISO format timestamp string back to datetime
-            payload['timestamp'] = datetime.fromisoformat(payload['timestamp'])
-            
-            # Validate device count
-            n_devices = len(payload.get('devices', []))
-            if n_devices > 50:
-                self.logger.warning(f"Received more devices than expected: {n_devices}")
-            
+            n_devices = len(payload['devices'])
             self.logger.info(
                 f"Message #{self.messages_received} - "
-                f"Sequence: {payload.get('sequence', 'N/A')}, "
-                f"Devices: {n_devices}/50, "
-                f"N_ADV_RAW: {payload.get('n_adv_raw', 'N/A')}"
+                f"Sequence: {payload['sequence']}, "
+                f"Devices: {n_devices}/{self.MAX_DEVICES}, "
+                f"N_ADV_RAW: {payload['n_adv_raw']}"
             )
             
-            # Enqueue the payload for immediate MongoDB insertion
+            # Enqueue the parsed payload for MongoDB insertion
             self.message_queue.put(payload)
             
-        except json.JSONDecodeError as e:
-            self.logger.error(f"Error decoding JSON message: {e}")
-            self.logger.error(f"Raw message: {msg.payload}")
         except Exception as e:
             self.logger.error(f"Error processing message: {e}")
-            self.logger.error(f"Raw message: {msg.payload}")
+            self.logger.error(f"Raw message length: {len(msg.payload)} bytes")
 
     def _process_messages(self):
         """Worker thread to immediately insert each received message into MongoDB"""
