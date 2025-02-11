@@ -173,7 +173,7 @@ class UARTMQTTPublisher(UARTReceiver):
             self.serial = serial.Serial(
                 port=self.port,
                 baudrate=self.baudrate,
-                timeout=20.0
+                timeout=0.1
             )
             self.serial.reset_input_buffer()
             self.serial.reset_output_buffer()
