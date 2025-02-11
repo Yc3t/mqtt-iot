@@ -32,12 +32,12 @@ class UARTMQTTPublisher(UARTReceiver):
         self._setup_logging(log_level)
         self.logger.info(f"Script started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         
-        # Initialize serial port
+        # Initialize serial port with a 1-second timeout so that read(n) will wait for complete data
         try:
             self.serial = serial.Serial(
                 port=port,
                 baudrate=baudrate,
-                timeout=0  # Non-blocking reads
+                timeout=1  # Blocking reads with 1 sec timeout
             )
             self.logger.info(f"Opened serial port {port} at {baudrate} baud")
             

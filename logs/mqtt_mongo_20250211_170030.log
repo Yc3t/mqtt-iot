@@ -7,3 +7,19 @@
 2025-02-11 17:00:30,919 - INFO - Connected to MQTT Broker successfully
 2025-02-11 17:00:30,920 - INFO - Subscribed to topic: admin/reader
 2025-02-11 17:00:30,926 - INFO - Subscription confirmed with reason codes: [ReasonCode(Suback, 'Granted QoS 1')]
+2025-02-11 17:00:40,921 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:00:50,921 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:01:00,922 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:01:10,923 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:01:20,924 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:01:30,925 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:01:40,926 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:01:50,927 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:02:00,928 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:02:10,929 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:02:20,929 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:02:30,931 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:02:40,932 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:02:50,673 - INFO - Termination signal received
+2025-02-11 17:02:51,181 - ERROR - Error closing connections: MQTTMongoSubscriber.on_disconnect() takes 5 positional arguments but 6 were given
+2025-02-11 17:02:51,182 - ERROR - Error closing connections: MQTTMongoSubscriber.on_disconnect() takes 5 positional arguments but 6 were given
