@@ -1,0 +1,21 @@
+2025-02-11 16:57:27,081 - INFO - Script started: 2025-02-11 16:57:27
+2025-02-11 16:57:27,125 - INFO - Connected to MongoDB at mongodb://localhost:27017/
+2025-02-11 16:57:27,126 - INFO - Connecting to MQTT broker at localhost:1883
+2025-02-11 16:57:27,140 - INFO - MQTT client setup complete
+2025-02-11 16:57:27,141 - INFO - Starting MQTT subscriber...
+2025-02-11 16:57:27,143 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:57:27,143 - INFO - Connected to MQTT Broker successfully
+2025-02-11 16:57:27,143 - INFO - Subscribed to topic: admin/reader
+2025-02-11 16:57:27,149 - INFO - Subscription confirmed with reason codes: [ReasonCode(Suback, 'Granted QoS 1')]
+2025-02-11 16:57:37,144 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:57:47,145 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:57:57,146 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:58:07,147 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:58:17,148 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:58:27,150 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:58:37,151 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:58:47,152 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:58:57,153 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:59:07,154 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:59:17,155 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 16:59:27,155 - INFO - Status - Messages received: 0, Devices processed: 0
