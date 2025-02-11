@@ -192,16 +192,17 @@ class UARTMQTTPublisher(UARTReceiver):
                 self.logger.error(f"Error in publish worker: {e}")
 
     def _reset_serial(self):
-        """Reset and reopen serial port"""
+        """Reset and reopen serial port with a 20-second timeout"""
         try:
             if hasattr(self, 'serial') and self.serial.is_open:
                 self.serial.close()
             
             self.logger.info(f"Attempting to reopen serial port {self.port}")
+            # Increase timeout to 20.0 seconds to accommodate the 7-second buffer interval.
             self.serial = serial.Serial(
                 port=self.port,
                 baudrate=self.baudrate,
-                timeout=1.0
+                timeout=20.0
             )
             self.serial.reset_input_buffer()
             self.serial.reset_output_buffer()
