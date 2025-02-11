@@ -236,7 +236,7 @@ class UARTMQTTPublisher(UARTReceiver):
 
                 # Read with timeout
                 byte = self.serial.read()
-                if not byte:  # Timeout occurred
+                if not byte:  # Timeout occurred, no data available
                     continue
 
                 if byte == b'\x55':
@@ -258,7 +258,7 @@ class UARTMQTTPublisher(UARTReceiver):
                     for i in range(header['n_mac']):
                         device_data = self.serial.read(self.DEVICE_LENGTH)
                         if not device_data or len(device_data) != self.DEVICE_LENGTH:
-                            self.logger.warning(f"Incomplete device data received")
+                            self.logger.warning("Incomplete device data received")
                             break
                         device = self._parse_device(device_data)
                         if device:
@@ -277,6 +277,10 @@ class UARTMQTTPublisher(UARTReceiver):
                         )
 
             except serial.SerialException as e:
+                # Check if the error is due to a benign timeout
+                if "returned no data" in str(e):
+                    self.logger.debug("Serial timeout, no data available.")
+                    continue
                 error_count += 1
                 self.logger.error(f"Serial communication error: {e}")
                 if error_count >= MAX_ERRORS:
