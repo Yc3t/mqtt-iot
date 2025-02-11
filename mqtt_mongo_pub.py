@@ -189,78 +189,78 @@ class UARTMQTTPublisher(UARTReceiver):
         self.logger.info("Termination signal received")
         
     def receive_messages(self, duration=None):
-        """Receive UART buffers and publish them immediately to MQTT"""
+        """Receive UART buffers and publish them immediately to MQTT using a combined tracker approach."""
         start_time = time.time()
         processed_buffers = 0
-        last_data_time = time.time()
-        
-        self.logger.info("Starting buffer reception...")
+
+        self.logger.info("Starting combined capture of BLE messages...")
         self.logger.debug(f"Expecting data every {self.SAMPLING_INTERVAL} seconds")
-        
+
         while self.running:
             try:
+                # Check for duration limit if provided
                 if duration and (time.time() - start_time) >= duration:
                     self.logger.info(f"Execution time ({duration}s) completed")
                     break
 
-                # Read available data
-                if self.serial.in_waiting:
-                    self.logger.debug(f"Data available: {self.serial.in_waiting} bytes")
-                    byte = self.serial.read()
-                    
+                # --- Wait for header magic ---
+                # Loop until we find the header start (0x55 x4)
+                while True:
+                    byte = self.serial.read(1)
+                    if not byte:
+                        # No data yet, wait a bit.
+                        time.sleep(0.05)
+                        continue
                     if byte == b'\x55':
-                        self.logger.debug("Found potential header start")
-                        potential_header = b'\x55' + self.serial.read(3)
-                        
+                        potential_header = byte + self.serial.read(3)
                         if potential_header == self.HEADER_MAGIC:
-                            self.logger.debug("Valid header magic found")
-                            
-                            # Read rest of header
-                            header_rest = self.serial.read(4)  # sequence + n_adv_raw + n_mac
-                            if len(header_rest) != 4:
-                                self.logger.warning("Incomplete header rest")
-                                continue
-                            
-                            n_mac = header_rest[3]  # Last byte is n_mac
-                            self.logger.debug(f"Header indicates {n_mac} devices")
-                            
-                            # Read all device data
-                            device_data = self.serial.read(n_mac * self.DEVICE_LENGTH)
-                            if len(device_data) != n_mac * self.DEVICE_LENGTH:
-                                self.logger.warning(
-                                    f"Incomplete device data: got {len(device_data)} bytes, "
-                                    f"expected {n_mac * self.DEVICE_LENGTH}"
-                                )
-                                continue
-                            
-                            # Combine all parts
-                            complete_buffer = potential_header + header_rest + device_data
-                            
-                            # Publish
-                            if self._publish_buffer(complete_buffer):
-                                processed_buffers += 1
-                                last_data_time = time.time()
-                                self.logger.info(
-                                    f"Published buffer #{processed_buffers} with {n_mac} devices"
-                                )
-                
+                            self.logger.debug("Cabecera UART encontrada")
+                            break
+
+                # --- Read and parse the rest of the header ---
+                header_rest = self.serial.read(self.HEADER_LENGTH - 4)
+                if len(header_rest) != self.HEADER_LENGTH - 4:
+                    self.logger.warning("Incomplete header received")
+                    continue
+                header_data = potential_header + header_rest
+                header = self._parse_header(header_data)
+                if not header:
+                    self.logger.warning("Error parsing header")
+                    continue
+                self.logger.debug(f"Header parsed: {header}")
+
+                # --- Read all device data ---
+                expected_device_bytes = header['n_mac'] * self.DEVICE_LENGTH
+                device_data = b""
+                while len(device_data) < expected_device_bytes:
+                    chunk = self.serial.read(expected_device_bytes - len(device_data))
+                    if not chunk:
+                        time.sleep(0.05)
+                        continue
+                    device_data += chunk
+                if len(device_data) != expected_device_bytes:
+                    self.logger.warning(
+                        f"Incomplete device data: got {len(device_data)} bytes, expected {expected_device_bytes}"
+                    )
+                    continue
+
+                # Combine header and device data to form the complete buffer
+                complete_buffer = header_data + device_data
+
+                # --- Publish the complete buffer ---
+                if self._publish_buffer(complete_buffer):
+                    processed_buffers += 1
+                    self.logger.info(
+                        f"Published buffer #{processed_buffers} with {header['n_mac']} devices"
+                    )
                 else:
-                    # Check if we haven't received data for too long
-                    time_since_last = time.time() - last_data_time
-                    if time_since_last > self.SAMPLING_INTERVAL * 2:
-                        self.logger.warning(
-                            f"No data received for {time_since_last:.1f} seconds "
-                            f"(expected every {self.SAMPLING_INTERVAL} seconds)"
-                        )
-                        last_data_time = time.time()  # Reset to prevent spam
-                    
-                    time.sleep(0.1)  # Short sleep when no data
+                    self.logger.warning("Failed to publish buffer")
 
             except serial.SerialException as e:
                 self.logger.error(f"Serial error: {e}")
                 time.sleep(1)
                 continue
-                
+
             except Exception as e:
                 self.logger.error(f"Unexpected error: {e}")
                 time.sleep(1)

@@ -7,3 +7,42 @@
 2025-02-11 17:02:54,384 - INFO - Connected to MQTT Broker successfully
 2025-02-11 17:02:54,385 - INFO - Subscribed to topic: admin/reader
 2025-02-11 17:02:54,391 - INFO - Subscription confirmed with reason codes: [ReasonCode(Suback, 'Granted QoS 1')]
+2025-02-11 17:03:04,388 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:03:14,389 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:03:24,391 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:03:34,392 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:03:44,393 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:03:54,395 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:04:04,396 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:04:14,397 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:04:24,397 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:04:34,398 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:04:44,399 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:04:54,400 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:05:04,402 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:05:14,403 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:05:24,404 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:05:34,404 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:05:44,405 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:05:54,406 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:06:04,407 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:06:14,408 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:06:24,409 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:06:34,411 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:06:44,411 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:06:54,413 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:07:04,413 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:07:14,414 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:07:24,415 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:07:34,416 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:07:44,417 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:07:54,418 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:08:04,419 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:08:14,420 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:08:24,421 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:08:34,423 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:08:44,423 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:08:54,424 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:09:04,425 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:09:14,426 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:09:24,427 - INFO - Status - Messages received: 0, Devices processed: 0
