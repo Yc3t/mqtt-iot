@@ -73,3 +73,31 @@
 2025-02-11 17:12:45,375 - INFO - Message #3 - Sequence: 176, Devices: 2/50, N_ADV_RAW: 41
 2025-02-11 17:12:45,377 - INFO - Inserted message: Sequence: 176, Devices: 2
 2025-02-11 17:12:54,450 - INFO - Status - Messages received: 3, Devices processed: 8
+2025-02-11 17:13:00,369 - INFO - Message #4 - Sequence: 180, Devices: 1/50, N_ADV_RAW: 41
+2025-02-11 17:13:00,371 - INFO - Inserted message: Sequence: 180, Devices: 1
+2025-02-11 17:13:04,451 - INFO - Status - Messages received: 4, Devices processed: 9
+2025-02-11 17:13:05,385 - INFO - Message #5 - Sequence: 181, Devices: 4/50, N_ADV_RAW: 45
+2025-02-11 17:13:05,386 - INFO - Inserted message: Sequence: 181, Devices: 4
+2025-02-11 17:13:14,452 - INFO - Status - Messages received: 5, Devices processed: 13
+2025-02-11 17:13:20,372 - INFO - Message #6 - Sequence: 183, Devices: 3/50, N_ADV_RAW: 46
+2025-02-11 17:13:20,373 - INFO - Inserted message: Sequence: 183, Devices: 3
+2025-02-11 17:13:24,453 - INFO - Status - Messages received: 6, Devices processed: 16
+2025-02-11 17:13:34,456 - INFO - Status - Messages received: 6, Devices processed: 16
+2025-02-11 17:13:44,457 - INFO - Status - Messages received: 6, Devices processed: 16
+2025-02-11 17:13:54,458 - INFO - Status - Messages received: 6, Devices processed: 16
+2025-02-11 17:14:04,459 - INFO - Status - Messages received: 6, Devices processed: 16
+2025-02-11 17:14:14,461 - INFO - Status - Messages received: 6, Devices processed: 16
+2025-02-11 17:14:24,462 - INFO - Status - Messages received: 6, Devices processed: 16
+2025-02-11 17:14:34,463 - INFO - Status - Messages received: 6, Devices processed: 16
+2025-02-11 17:14:44,463 - INFO - Status - Messages received: 6, Devices processed: 16
+2025-02-11 17:14:54,464 - INFO - Status - Messages received: 6, Devices processed: 16
+2025-02-11 17:15:04,465 - INFO - Status - Messages received: 6, Devices processed: 16
+2025-02-11 17:15:14,466 - INFO - Status - Messages received: 6, Devices processed: 16
+2025-02-11 17:15:24,467 - INFO - Status - Messages received: 6, Devices processed: 16
+2025-02-11 17:15:34,469 - INFO - Status - Messages received: 6, Devices processed: 16
+2025-02-11 17:15:44,469 - INFO - Status - Messages received: 6, Devices processed: 16
+2025-02-11 17:15:54,470 - INFO - Status - Messages received: 6, Devices processed: 16
+2025-02-11 17:16:03,786 - INFO - Termination signal received
+2025-02-11 17:16:03,985 - INFO - Termination signal received
+2025-02-11 17:16:04,836 - ERROR - Error closing connections: MQTTMongoSubscriber.on_disconnect() takes 5 positional arguments but 6 were given
+2025-02-11 17:16:04,837 - ERROR - Error closing connections: MQTTMongoSubscriber.on_disconnect() takes 5 positional arguments but 6 were given

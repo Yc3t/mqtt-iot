@@ -1,0 +1,302 @@
+2025-02-11 17:16:17,262 - INFO - Script started: 2025-02-11 17:16:17
+2025-02-11 17:16:17,312 - INFO - Connected to MongoDB at mongodb://localhost:27017/
+2025-02-11 17:16:17,313 - INFO - Connecting to MQTT broker at localhost:1883
+2025-02-11 17:16:17,327 - INFO - MQTT client setup complete
+2025-02-11 17:16:17,328 - INFO - Starting MQTT subscriber...
+2025-02-11 17:16:17,329 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:16:17,330 - INFO - Connected to MQTT Broker successfully
+2025-02-11 17:16:17,330 - INFO - Subscribed to topic: admin/reader
+2025-02-11 17:16:17,333 - INFO - Subscription confirmed with reason codes: [ReasonCode(Suback, 'Granted QoS 1')]
+2025-02-11 17:16:27,331 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:16:37,332 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:16:47,332 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:16:57,334 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:17:07,335 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:17:17,336 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:17:27,337 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:17:37,338 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:17:47,339 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:17:57,340 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:18:07,341 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:18:17,342 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:18:27,343 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:18:37,344 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:18:47,345 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:18:57,346 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:19:07,347 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:19:17,348 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:19:27,349 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:19:37,351 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:19:47,352 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:19:57,352 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:20:07,354 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:20:17,355 - INFO - Status - Messages received: 0, Devices processed: 0
+2025-02-11 17:20:25,384 - INFO - Message #1 - Sequence: 13, Devices: 4/50, N_ADV_RAW: 41
+2025-02-11 17:20:25,386 - INFO - Inserted message: Sequence: 13, Devices: 4
+2025-02-11 17:20:27,356 - INFO - Status - Messages received: 1, Devices processed: 4
+2025-02-11 17:20:30,472 - INFO - Message #2 - Sequence: 14, Devices: 2/50, N_ADV_RAW: 32
+2025-02-11 17:20:30,473 - INFO - Inserted message: Sequence: 14, Devices: 2
+2025-02-11 17:20:35,382 - INFO - Message #3 - Sequence: 15, Devices: 3/50, N_ADV_RAW: 44
+2025-02-11 17:20:35,384 - INFO - Inserted message: Sequence: 15, Devices: 3
+2025-02-11 17:20:37,356 - INFO - Status - Messages received: 3, Devices processed: 9
+2025-02-11 17:20:40,378 - INFO - Message #4 - Sequence: 16, Devices: 1/50, N_ADV_RAW: 43
+2025-02-11 17:20:40,379 - INFO - Inserted message: Sequence: 16, Devices: 1
+2025-02-11 17:20:45,385 - INFO - Message #5 - Sequence: 17, Devices: 4/50, N_ADV_RAW: 44
+2025-02-11 17:20:45,386 - INFO - Inserted message: Sequence: 17, Devices: 4
+2025-02-11 17:20:47,357 - INFO - Status - Messages received: 5, Devices processed: 14
+2025-02-11 17:20:50,376 - INFO - Message #6 - Sequence: 18, Devices: 2/50, N_ADV_RAW: 41
+2025-02-11 17:20:50,378 - INFO - Inserted message: Sequence: 18, Devices: 2
+2025-02-11 17:20:55,604 - INFO - Message #7 - Sequence: 19, Devices: 4/50, N_ADV_RAW: 42
+2025-02-11 17:20:55,605 - INFO - Inserted message: Sequence: 19, Devices: 4
+2025-02-11 17:20:57,359 - INFO - Status - Messages received: 7, Devices processed: 20
+2025-02-11 17:21:00,377 - INFO - Message #8 - Sequence: 20, Devices: 2/50, N_ADV_RAW: 39
+2025-02-11 17:21:00,379 - INFO - Inserted message: Sequence: 20, Devices: 2
+2025-02-11 17:21:05,387 - INFO - Message #9 - Sequence: 21, Devices: 4/50, N_ADV_RAW: 44
+2025-02-11 17:21:05,388 - INFO - Inserted message: Sequence: 21, Devices: 4
+2025-02-11 17:21:07,360 - INFO - Status - Messages received: 9, Devices processed: 26
+2025-02-11 17:21:10,381 - INFO - Message #10 - Sequence: 22, Devices: 2/50, N_ADV_RAW: 43
+2025-02-11 17:21:10,383 - INFO - Inserted message: Sequence: 22, Devices: 2
+2025-02-11 17:21:15,383 - INFO - Message #11 - Sequence: 23, Devices: 4/50, N_ADV_RAW: 37
+2025-02-11 17:21:15,384 - INFO - Inserted message: Sequence: 23, Devices: 4
+2025-02-11 17:21:17,362 - INFO - Status - Messages received: 11, Devices processed: 32
+2025-02-11 17:21:20,392 - INFO - Message #12 - Sequence: 24, Devices: 2/50, N_ADV_RAW: 43
+2025-02-11 17:21:20,393 - INFO - Inserted message: Sequence: 24, Devices: 2
+2025-02-11 17:21:25,407 - INFO - Message #13 - Sequence: 25, Devices: 4/50, N_ADV_RAW: 42
+2025-02-11 17:21:25,408 - INFO - Inserted message: Sequence: 25, Devices: 4
+2025-02-11 17:21:27,363 - INFO - Status - Messages received: 13, Devices processed: 38
+2025-02-11 17:21:30,391 - INFO - Message #14 - Sequence: 26, Devices: 2/50, N_ADV_RAW: 37
+2025-02-11 17:21:30,392 - INFO - Inserted message: Sequence: 26, Devices: 2
+2025-02-11 17:21:35,471 - INFO - Message #15 - Sequence: 27, Devices: 4/50, N_ADV_RAW: 42
+2025-02-11 17:21:35,472 - INFO - Inserted message: Sequence: 27, Devices: 4
+2025-02-11 17:21:37,364 - INFO - Status - Messages received: 15, Devices processed: 44
+2025-02-11 17:21:40,379 - INFO - Message #16 - Sequence: 28, Devices: 2/50, N_ADV_RAW: 42
+2025-02-11 17:21:40,381 - INFO - Inserted message: Sequence: 28, Devices: 2
+2025-02-11 17:21:45,390 - INFO - Message #17 - Sequence: 29, Devices: 4/50, N_ADV_RAW: 44
+2025-02-11 17:21:45,391 - INFO - Inserted message: Sequence: 29, Devices: 4
+2025-02-11 17:21:47,365 - INFO - Status - Messages received: 17, Devices processed: 50
+2025-02-11 17:21:50,381 - INFO - Message #18 - Sequence: 30, Devices: 2/50, N_ADV_RAW: 44
+2025-02-11 17:21:50,382 - INFO - Inserted message: Sequence: 30, Devices: 2
+2025-02-11 17:21:55,472 - INFO - Message #19 - Sequence: 31, Devices: 4/50, N_ADV_RAW: 42
+2025-02-11 17:21:55,474 - INFO - Inserted message: Sequence: 31, Devices: 4
+2025-02-11 17:21:57,366 - INFO - Status - Messages received: 19, Devices processed: 56
+2025-02-11 17:22:00,378 - INFO - Message #20 - Sequence: 32, Devices: 1/50, N_ADV_RAW: 40
+2025-02-11 17:22:00,381 - INFO - Inserted message: Sequence: 32, Devices: 1
+2025-02-11 17:22:05,384 - INFO - Message #21 - Sequence: 33, Devices: 3/50, N_ADV_RAW: 40
+2025-02-11 17:22:05,387 - INFO - Inserted message: Sequence: 33, Devices: 3
+2025-02-11 17:22:07,367 - INFO - Status - Messages received: 21, Devices processed: 60
+2025-02-11 17:22:10,394 - INFO - Message #22 - Sequence: 34, Devices: 2/50, N_ADV_RAW: 42
+2025-02-11 17:22:10,395 - INFO - Inserted message: Sequence: 34, Devices: 2
+2025-02-11 17:22:15,541 - INFO - Message #23 - Sequence: 35, Devices: 4/50, N_ADV_RAW: 37
+2025-02-11 17:22:15,544 - INFO - Inserted message: Sequence: 35, Devices: 4
+2025-02-11 17:22:17,368 - INFO - Status - Messages received: 23, Devices processed: 66
+2025-02-11 17:22:20,382 - INFO - Message #24 - Sequence: 36, Devices: 2/50, N_ADV_RAW: 45
+2025-02-11 17:22:20,385 - INFO - Inserted message: Sequence: 36, Devices: 2
+2025-02-11 17:22:25,387 - INFO - Message #25 - Sequence: 37, Devices: 4/50, N_ADV_RAW: 42
+2025-02-11 17:22:25,388 - INFO - Inserted message: Sequence: 37, Devices: 4
+2025-02-11 17:22:27,370 - INFO - Status - Messages received: 25, Devices processed: 72
+2025-02-11 17:22:30,382 - INFO - Message #26 - Sequence: 38, Devices: 2/50, N_ADV_RAW: 42
+2025-02-11 17:22:30,386 - INFO - Inserted message: Sequence: 38, Devices: 2
+2025-02-11 17:22:35,392 - INFO - Message #27 - Sequence: 39, Devices: 4/50, N_ADV_RAW: 43
+2025-02-11 17:22:35,394 - INFO - Inserted message: Sequence: 39, Devices: 4
+2025-02-11 17:22:37,371 - INFO - Status - Messages received: 27, Devices processed: 78
+2025-02-11 17:22:40,384 - INFO - Message #28 - Sequence: 40, Devices: 2/50, N_ADV_RAW: 44
+2025-02-11 17:22:40,387 - INFO - Inserted message: Sequence: 40, Devices: 2
+2025-02-11 17:22:45,416 - INFO - Message #29 - Sequence: 41, Devices: 4/50, N_ADV_RAW: 45
+2025-02-11 17:22:45,418 - INFO - Inserted message: Sequence: 41, Devices: 4
+2025-02-11 17:22:47,371 - INFO - Status - Messages received: 29, Devices processed: 84
+2025-02-11 17:22:50,381 - INFO - Message #30 - Sequence: 42, Devices: 2/50, N_ADV_RAW: 39
+2025-02-11 17:22:50,382 - INFO - Inserted message: Sequence: 42, Devices: 2
+2025-02-11 17:22:55,386 - INFO - Message #31 - Sequence: 43, Devices: 3/50, N_ADV_RAW: 44
+2025-02-11 17:22:55,389 - INFO - Inserted message: Sequence: 43, Devices: 3
+2025-02-11 17:22:57,373 - INFO - Status - Messages received: 31, Devices processed: 89
+2025-02-11 17:23:00,739 - INFO - Message #32 - Sequence: 44, Devices: 1/50, N_ADV_RAW: 42
+2025-02-11 17:23:00,740 - INFO - Inserted message: Sequence: 44, Devices: 1
+2025-02-11 17:23:05,389 - INFO - Message #33 - Sequence: 45, Devices: 4/50, N_ADV_RAW: 40
+2025-02-11 17:23:05,391 - INFO - Inserted message: Sequence: 45, Devices: 4
+2025-02-11 17:23:07,374 - INFO - Status - Messages received: 33, Devices processed: 94
+2025-02-11 17:23:10,381 - INFO - Message #34 - Sequence: 46, Devices: 2/50, N_ADV_RAW: 37
+2025-02-11 17:23:10,385 - INFO - Inserted message: Sequence: 46, Devices: 2
+2025-02-11 17:23:15,479 - INFO - Message #35 - Sequence: 47, Devices: 4/50, N_ADV_RAW: 41
+2025-02-11 17:23:15,480 - INFO - Inserted message: Sequence: 47, Devices: 4
+2025-02-11 17:23:17,375 - INFO - Status - Messages received: 35, Devices processed: 100
+2025-02-11 17:23:21,766 - INFO - Message #36 - Sequence: 48, Devices: 2/50, N_ADV_RAW: 36
+2025-02-11 17:23:21,767 - INFO - Inserted message: Sequence: 48, Devices: 2
+2025-02-11 17:23:25,389 - INFO - Message #37 - Sequence: 49, Devices: 4/50, N_ADV_RAW: 37
+2025-02-11 17:23:25,392 - INFO - Inserted message: Sequence: 49, Devices: 4
+2025-02-11 17:23:27,377 - INFO - Status - Messages received: 37, Devices processed: 106
+2025-02-11 17:23:30,382 - INFO - Message #38 - Sequence: 50, Devices: 2/50, N_ADV_RAW: 33
+2025-02-11 17:23:30,384 - INFO - Inserted message: Sequence: 50, Devices: 2
+2025-02-11 17:23:35,383 - INFO - Message #39 - Sequence: 51, Devices: 3/50, N_ADV_RAW: 30
+2025-02-11 17:23:35,385 - INFO - Inserted message: Sequence: 51, Devices: 3
+2025-02-11 17:23:37,377 - INFO - Status - Messages received: 39, Devices processed: 111
+2025-02-11 17:23:40,381 - INFO - Message #40 - Sequence: 52, Devices: 2/50, N_ADV_RAW: 38
+2025-02-11 17:23:40,384 - INFO - Inserted message: Sequence: 52, Devices: 2
+2025-02-11 17:23:47,378 - INFO - Status - Messages received: 40, Devices processed: 113
+2025-02-11 17:23:53,786 - INFO - Message #41 - Sequence: 53, Devices: 3/50, N_ADV_RAW: 30
+2025-02-11 17:23:53,789 - INFO - Inserted message: Sequence: 53, Devices: 3
+2025-02-11 17:23:53,791 - INFO - Message #42 - Sequence: 54, Devices: 2/50, N_ADV_RAW: 27
+2025-02-11 17:23:53,792 - INFO - Inserted message: Sequence: 54, Devices: 2
+2025-02-11 17:23:55,466 - INFO - Message #43 - Sequence: 55, Devices: 4/50, N_ADV_RAW: 36
+2025-02-11 17:23:55,467 - INFO - Inserted message: Sequence: 55, Devices: 4
+2025-02-11 17:23:57,379 - INFO - Status - Messages received: 43, Devices processed: 122
+2025-02-11 17:24:00,383 - INFO - Message #44 - Sequence: 56, Devices: 2/50, N_ADV_RAW: 41
+2025-02-11 17:24:00,386 - INFO - Inserted message: Sequence: 56, Devices: 2
+2025-02-11 17:24:05,523 - INFO - Message #45 - Sequence: 57, Devices: 4/50, N_ADV_RAW: 43
+2025-02-11 17:24:05,527 - INFO - Inserted message: Sequence: 57, Devices: 4
+2025-02-11 17:24:07,380 - INFO - Status - Messages received: 45, Devices processed: 128
+2025-02-11 17:24:10,383 - INFO - Message #46 - Sequence: 58, Devices: 2/50, N_ADV_RAW: 41
+2025-02-11 17:24:10,386 - INFO - Inserted message: Sequence: 58, Devices: 2
+2025-02-11 17:24:15,384 - INFO - Message #47 - Sequence: 59, Devices: 3/50, N_ADV_RAW: 39
+2025-02-11 17:24:15,386 - INFO - Inserted message: Sequence: 59, Devices: 3
+2025-02-11 17:24:17,382 - INFO - Status - Messages received: 47, Devices processed: 133
+2025-02-11 17:24:20,416 - INFO - Message #48 - Sequence: 60, Devices: 2/50, N_ADV_RAW: 36
+2025-02-11 17:24:20,418 - INFO - Inserted message: Sequence: 60, Devices: 2
+2025-02-11 17:24:25,411 - INFO - Message #49 - Sequence: 61, Devices: 3/50, N_ADV_RAW: 37
+2025-02-11 17:24:25,412 - INFO - Inserted message: Sequence: 61, Devices: 3
+2025-02-11 17:24:27,383 - INFO - Status - Messages received: 49, Devices processed: 138
+2025-02-11 17:24:30,383 - INFO - Message #50 - Sequence: 62, Devices: 2/50, N_ADV_RAW: 38
+2025-02-11 17:24:30,387 - INFO - Inserted message: Sequence: 62, Devices: 2
+2025-02-11 17:24:35,422 - INFO - Message #51 - Sequence: 63, Devices: 5/50, N_ADV_RAW: 45
+2025-02-11 17:24:35,424 - INFO - Inserted message: Sequence: 63, Devices: 5
+2025-02-11 17:24:37,384 - INFO - Status - Messages received: 51, Devices processed: 145
+2025-02-11 17:24:40,393 - INFO - Message #52 - Sequence: 64, Devices: 2/50, N_ADV_RAW: 39
+2025-02-11 17:24:40,395 - INFO - Inserted message: Sequence: 64, Devices: 2
+2025-02-11 17:24:45,516 - INFO - Message #53 - Sequence: 65, Devices: 4/50, N_ADV_RAW: 43
+2025-02-11 17:24:45,518 - INFO - Inserted message: Sequence: 65, Devices: 4
+2025-02-11 17:24:47,385 - INFO - Status - Messages received: 53, Devices processed: 151
+2025-02-11 17:24:50,380 - INFO - Message #54 - Sequence: 66, Devices: 2/50, N_ADV_RAW: 39
+2025-02-11 17:24:50,381 - INFO - Inserted message: Sequence: 66, Devices: 2
+2025-02-11 17:24:55,474 - INFO - Message #55 - Sequence: 67, Devices: 4/50, N_ADV_RAW: 41
+2025-02-11 17:24:55,477 - INFO - Inserted message: Sequence: 67, Devices: 4
+2025-02-11 17:24:57,387 - INFO - Status - Messages received: 55, Devices processed: 157
+2025-02-11 17:25:00,541 - INFO - Message #56 - Sequence: 68, Devices: 2/50, N_ADV_RAW: 35
+2025-02-11 17:25:00,544 - INFO - Inserted message: Sequence: 68, Devices: 2
+2025-02-11 17:25:05,389 - INFO - Message #57 - Sequence: 69, Devices: 4/50, N_ADV_RAW: 28
+2025-02-11 17:25:05,391 - INFO - Inserted message: Sequence: 69, Devices: 4
+2025-02-11 17:25:07,387 - INFO - Status - Messages received: 57, Devices processed: 163
+2025-02-11 17:25:10,383 - INFO - Message #58 - Sequence: 70, Devices: 2/50, N_ADV_RAW: 39
+2025-02-11 17:25:10,384 - INFO - Inserted message: Sequence: 70, Devices: 2
+2025-02-11 17:25:15,391 - INFO - Message #59 - Sequence: 71, Devices: 4/50, N_ADV_RAW: 36
+2025-02-11 17:25:15,395 - INFO - Inserted message: Sequence: 71, Devices: 4
+2025-02-11 17:25:17,389 - INFO - Status - Messages received: 59, Devices processed: 169
+2025-02-11 17:25:20,379 - INFO - Message #60 - Sequence: 72, Devices: 1/50, N_ADV_RAW: 37
+2025-02-11 17:25:20,380 - INFO - Inserted message: Sequence: 72, Devices: 1
+2025-02-11 17:25:25,387 - INFO - Message #61 - Sequence: 73, Devices: 4/50, N_ADV_RAW: 44
+2025-02-11 17:25:25,388 - INFO - Inserted message: Sequence: 73, Devices: 4
+2025-02-11 17:25:27,390 - INFO - Status - Messages received: 61, Devices processed: 174
+2025-02-11 17:25:30,486 - INFO - Message #62 - Sequence: 74, Devices: 2/50, N_ADV_RAW: 40
+2025-02-11 17:25:30,487 - INFO - Inserted message: Sequence: 74, Devices: 2
+2025-02-11 17:25:35,522 - INFO - Message #63 - Sequence: 75, Devices: 3/50, N_ADV_RAW: 37
+2025-02-11 17:25:35,524 - INFO - Inserted message: Sequence: 75, Devices: 3
+2025-02-11 17:25:37,391 - INFO - Status - Messages received: 63, Devices processed: 179
+2025-02-11 17:25:41,990 - INFO - Message #64 - Sequence: 76, Devices: 1/50, N_ADV_RAW: 42
+2025-02-11 17:25:41,993 - INFO - Inserted message: Sequence: 76, Devices: 1
+2025-02-11 17:25:47,392 - INFO - Status - Messages received: 64, Devices processed: 180
+2025-02-11 17:25:57,394 - INFO - Status - Messages received: 64, Devices processed: 180
+2025-02-11 17:26:00,508 - INFO - Message #65 - Sequence: 77, Devices: 4/50, N_ADV_RAW: 43
+2025-02-11 17:26:00,509 - INFO - Inserted message: Sequence: 77, Devices: 4
+2025-02-11 17:26:00,535 - INFO - Message #66 - Sequence: 78, Devices: 2/50, N_ADV_RAW: 40
+2025-02-11 17:26:00,536 - INFO - Message #67 - Sequence: 79, Devices: 3/50, N_ADV_RAW: 41
+2025-02-11 17:26:00,536 - INFO - Inserted message: Sequence: 78, Devices: 2
+2025-02-11 17:26:00,537 - INFO - Message #68 - Sequence: 80, Devices: 2/50, N_ADV_RAW: 42
+2025-02-11 17:26:00,538 - INFO - Inserted message: Sequence: 79, Devices: 3
+2025-02-11 17:26:00,539 - INFO - Inserted message: Sequence: 80, Devices: 2
+2025-02-11 17:26:05,386 - INFO - Message #69 - Sequence: 81, Devices: 3/50, N_ADV_RAW: 41
+2025-02-11 17:26:05,389 - INFO - Inserted message: Sequence: 81, Devices: 3
+2025-02-11 17:26:07,395 - INFO - Status - Messages received: 69, Devices processed: 194
+2025-02-11 17:26:10,382 - INFO - Message #70 - Sequence: 82, Devices: 2/50, N_ADV_RAW: 46
+2025-02-11 17:26:10,383 - INFO - Inserted message: Sequence: 82, Devices: 2
+2025-02-11 17:26:15,390 - INFO - Message #71 - Sequence: 83, Devices: 4/50, N_ADV_RAW: 44
+2025-02-11 17:26:15,391 - INFO - Inserted message: Sequence: 83, Devices: 4
+2025-02-11 17:26:17,396 - INFO - Status - Messages received: 71, Devices processed: 200
+2025-02-11 17:26:20,389 - INFO - Message #72 - Sequence: 84, Devices: 2/50, N_ADV_RAW: 40
+2025-02-11 17:26:20,390 - INFO - Inserted message: Sequence: 84, Devices: 2
+2025-02-11 17:26:25,383 - INFO - Message #73 - Sequence: 85, Devices: 3/50, N_ADV_RAW: 27
+2025-02-11 17:26:25,384 - INFO - Inserted message: Sequence: 85, Devices: 3
+2025-02-11 17:26:27,396 - INFO - Status - Messages received: 73, Devices processed: 205
+2025-02-11 17:26:30,383 - INFO - Message #74 - Sequence: 86, Devices: 2/50, N_ADV_RAW: 36
+2025-02-11 17:26:30,385 - INFO - Inserted message: Sequence: 86, Devices: 2
+2025-02-11 17:26:36,015 - INFO - Message #75 - Sequence: 87, Devices: 2/50, N_ADV_RAW: 34
+2025-02-11 17:26:36,018 - INFO - Inserted message: Sequence: 87, Devices: 2
+2025-02-11 17:26:37,398 - INFO - Status - Messages received: 75, Devices processed: 209
+2025-02-11 17:26:40,380 - INFO - Message #76 - Sequence: 88, Devices: 2/50, N_ADV_RAW: 43
+2025-02-11 17:26:40,383 - INFO - Inserted message: Sequence: 88, Devices: 2
+2025-02-11 17:26:45,388 - INFO - Message #77 - Sequence: 89, Devices: 3/50, N_ADV_RAW: 38
+2025-02-11 17:26:45,390 - INFO - Inserted message: Sequence: 89, Devices: 3
+2025-02-11 17:26:47,398 - INFO - Status - Messages received: 77, Devices processed: 214
+2025-02-11 17:26:50,380 - INFO - Message #78 - Sequence: 90, Devices: 1/50, N_ADV_RAW: 37
+2025-02-11 17:26:50,382 - INFO - Inserted message: Sequence: 90, Devices: 1
+2025-02-11 17:26:55,480 - INFO - Message #79 - Sequence: 91, Devices: 4/50, N_ADV_RAW: 40
+2025-02-11 17:26:55,481 - INFO - Inserted message: Sequence: 91, Devices: 4
+2025-02-11 17:26:57,399 - INFO - Status - Messages received: 79, Devices processed: 219
+2025-02-11 17:27:00,483 - INFO - Message #80 - Sequence: 92, Devices: 1/50, N_ADV_RAW: 43
+2025-02-11 17:27:00,485 - INFO - Inserted message: Sequence: 92, Devices: 1
+2025-02-11 17:27:05,386 - INFO - Message #81 - Sequence: 93, Devices: 2/50, N_ADV_RAW: 45
+2025-02-11 17:27:05,389 - INFO - Inserted message: Sequence: 93, Devices: 2
+2025-02-11 17:27:07,399 - INFO - Status - Messages received: 81, Devices processed: 222
+2025-02-11 17:27:10,383 - INFO - Message #82 - Sequence: 94, Devices: 2/50, N_ADV_RAW: 45
+2025-02-11 17:27:10,384 - INFO - Inserted message: Sequence: 94, Devices: 2
+2025-02-11 17:27:15,396 - INFO - Message #83 - Sequence: 95, Devices: 4/50, N_ADV_RAW: 45
+2025-02-11 17:27:15,397 - INFO - Inserted message: Sequence: 95, Devices: 4
+2025-02-11 17:27:17,400 - INFO - Status - Messages received: 83, Devices processed: 228
+2025-02-11 17:27:20,384 - INFO - Message #84 - Sequence: 96, Devices: 2/50, N_ADV_RAW: 41
+2025-02-11 17:27:20,386 - INFO - Inserted message: Sequence: 96, Devices: 2
+2025-02-11 17:27:25,393 - INFO - Message #85 - Sequence: 97, Devices: 5/50, N_ADV_RAW: 45
+2025-02-11 17:27:25,395 - INFO - Inserted message: Sequence: 97, Devices: 5
+2025-02-11 17:27:27,402 - INFO - Status - Messages received: 85, Devices processed: 235
+2025-02-11 17:27:30,398 - INFO - Message #86 - Sequence: 98, Devices: 6/50, N_ADV_RAW: 51
+2025-02-11 17:27:30,401 - INFO - Inserted message: Sequence: 98, Devices: 6
+2025-02-11 17:27:35,414 - INFO - Message #87 - Sequence: 99, Devices: 11/50, N_ADV_RAW: 77
+2025-02-11 17:27:35,415 - INFO - Inserted message: Sequence: 99, Devices: 11
+2025-02-11 17:27:37,403 - INFO - Status - Messages received: 87, Devices processed: 252
+2025-02-11 17:27:40,415 - INFO - Message #88 - Sequence: 100, Devices: 11/50, N_ADV_RAW: 90
+2025-02-11 17:27:40,417 - INFO - Inserted message: Sequence: 100, Devices: 11
+2025-02-11 17:27:45,431 - INFO - Message #89 - Sequence: 101, Devices: 13/50, N_ADV_RAW: 105
+2025-02-11 17:27:45,433 - INFO - Inserted message: Sequence: 101, Devices: 13
+2025-02-11 17:27:47,403 - INFO - Status - Messages received: 89, Devices processed: 276
+2025-02-11 17:27:50,479 - INFO - Message #90 - Sequence: 102, Devices: 10/50, N_ADV_RAW: 93
+2025-02-11 17:27:50,481 - INFO - Inserted message: Sequence: 102, Devices: 10
+2025-02-11 17:27:55,470 - INFO - Message #91 - Sequence: 103, Devices: 12/50, N_ADV_RAW: 74
+2025-02-11 17:27:55,472 - INFO - Inserted message: Sequence: 103, Devices: 12
+2025-02-11 17:27:57,405 - INFO - Status - Messages received: 91, Devices processed: 298
+2025-02-11 17:28:00,408 - INFO - Message #92 - Sequence: 104, Devices: 9/50, N_ADV_RAW: 57
+2025-02-11 17:28:00,409 - INFO - Inserted message: Sequence: 104, Devices: 9
+2025-02-11 17:28:05,402 - INFO - Message #93 - Sequence: 105, Devices: 7/50, N_ADV_RAW: 50
+2025-02-11 17:28:05,404 - INFO - Inserted message: Sequence: 105, Devices: 7
+2025-02-11 17:28:07,405 - INFO - Status - Messages received: 93, Devices processed: 314
+2025-02-11 17:28:10,402 - INFO - Message #94 - Sequence: 106, Devices: 2/50, N_ADV_RAW: 41
+2025-02-11 17:28:10,404 - INFO - Inserted message: Sequence: 106, Devices: 2
+2025-02-11 17:28:15,409 - INFO - Message #95 - Sequence: 107, Devices: 5/50, N_ADV_RAW: 38
+2025-02-11 17:28:15,411 - INFO - Inserted message: Sequence: 107, Devices: 5
+2025-02-11 17:28:17,407 - INFO - Status - Messages received: 95, Devices processed: 321
+2025-02-11 17:28:20,382 - INFO - Message #96 - Sequence: 108, Devices: 1/50, N_ADV_RAW: 32
+2025-02-11 17:28:20,383 - INFO - Inserted message: Sequence: 108, Devices: 1
+2025-02-11 17:28:25,402 - INFO - Message #97 - Sequence: 109, Devices: 4/50, N_ADV_RAW: 40
+2025-02-11 17:28:25,404 - INFO - Inserted message: Sequence: 109, Devices: 4
+2025-02-11 17:28:27,408 - INFO - Status - Messages received: 97, Devices processed: 326
+2025-02-11 17:28:30,388 - INFO - Message #98 - Sequence: 110, Devices: 2/50, N_ADV_RAW: 47
+2025-02-11 17:28:30,390 - INFO - Inserted message: Sequence: 110, Devices: 2
+2025-02-11 17:28:35,390 - INFO - Message #99 - Sequence: 111, Devices: 3/50, N_ADV_RAW: 46
+2025-02-11 17:28:35,393 - INFO - Inserted message: Sequence: 111, Devices: 3
+2025-02-11 17:28:37,409 - INFO - Status - Messages received: 99, Devices processed: 331
+2025-02-11 17:28:40,391 - INFO - Message #100 - Sequence: 112, Devices: 2/50, N_ADV_RAW: 45
+2025-02-11 17:28:40,392 - INFO - Inserted message: Sequence: 112, Devices: 2
+2025-02-11 17:28:45,396 - INFO - Message #101 - Sequence: 113, Devices: 4/50, N_ADV_RAW: 48
+2025-02-11 17:28:45,398 - INFO - Inserted message: Sequence: 113, Devices: 4
+2025-02-11 17:28:47,410 - INFO - Status - Messages received: 101, Devices processed: 337
+2025-02-11 17:28:50,969 - INFO - Message #102 - Sequence: 114, Devices: 1/50, N_ADV_RAW: 40
+2025-02-11 17:28:50,970 - INFO - Inserted message: Sequence: 114, Devices: 1
+2025-02-11 17:28:55,479 - INFO - Message #103 - Sequence: 115, Devices: 4/50, N_ADV_RAW: 39
+2025-02-11 17:28:55,480 - INFO - Inserted message: Sequence: 115, Devices: 4
+2025-02-11 17:28:57,411 - INFO - Status - Messages received: 103, Devices processed: 342
+2025-02-11 17:29:00,383 - INFO - Message #104 - Sequence: 116, Devices: 2/50, N_ADV_RAW: 37
+2025-02-11 17:29:00,385 - INFO - Inserted message: Sequence: 116, Devices: 2
+2025-02-11 17:29:05,389 - INFO - Message #105 - Sequence: 117, Devices: 3/50, N_ADV_RAW: 42
+2025-02-11 17:29:05,390 - INFO - Inserted message: Sequence: 117, Devices: 3
+2025-02-11 17:29:07,412 - INFO - Status - Messages received: 105, Devices processed: 347
+2025-02-11 17:29:10,398 - INFO - Message #106 - Sequence: 118, Devices: 2/50, N_ADV_RAW: 42
+2025-02-11 17:29:10,400 - INFO - Inserted message: Sequence: 118, Devices: 2
+2025-02-11 17:29:11,581 - INFO - Termination signal received
+2025-02-11 17:29:11,745 - INFO - Termination signal received
+2025-02-11 17:29:17,467 - ERROR - Error closing connections: MQTTMongoSubscriber.on_disconnect() takes 5 positional arguments but 6 were given
+2025-02-11 17:29:17,468 - ERROR - Error closing connections: MQTTMongoSubscriber.on_disconnect() takes 5 positional arguments but 6 were given
